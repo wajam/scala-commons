@@ -11,7 +11,7 @@ class TestResource extends FunSuite with ShouldMatchers {
   test("should be able to create a simple resource") {
     import TestResource._
     val wXml = Await.result(ResourceExample.root.get(), 10.seconds)
-    (wXml.elem \ "head" \ "title").text should include("Wajam")
+    (wXml.elem \ "head" \ "title").text should include(testString)
 
   }
 }
@@ -19,7 +19,7 @@ class TestResource extends FunSuite with ShouldMatchers {
 object TestResource {
 
   object ResourceExample extends ResourceModule[Nothing, WrappedXml, UntypedWrappedXml] {
-    protected def client: AsyncClient = new AsyncClient(HttpClientConfig())
+    protected def client: AsyncClient = new AsyncClient(testConfig)
 
     implicit protected def requestHandler: RequestHandler[Nothing] = ??? // Not using it... yet
 
@@ -42,7 +42,7 @@ object TestResource {
     val root = RootResource
 
     object RootResource extends GettableResource[ExampleResponse] {
-      protected val url = "http://www.wajam.com"
+      protected val url = testUrl
       protected val name = "example"
     }
 

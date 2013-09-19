@@ -21,8 +21,8 @@ class TestAsyncClient extends FunSuite with ShouldMatchers {
         spf
       }
     }
-    val client = new AsyncClient(HttpClientConfig())
-    extractTitle(Await.result(client.get(url("http://www.wajam.com")), 10.seconds)) should include("Wajam")
+    val client = new AsyncClient(testConfig)
+    extractTitle(Await.result(client.get(url(testUrl)), 10.seconds)) should include(testString)
   }
 
   private def extractTitle(x: xml.Elem): String = (x \ "head" \ "title").text
