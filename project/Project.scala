@@ -1,5 +1,7 @@
 import sbt._
 import Keys._
+import com.typesafe.sbt.SbtScalariform._
+import scalariform.formatter.preferences._
 
 object CommonsBuild extends Build {
   val commonResolvers = Seq(
@@ -35,6 +37,11 @@ object CommonsBuild extends Build {
     "net.liftweb" %% "lift-json" % "2.5.1"
   )
 
+  def configureScalariform(pref: IFormattingPreferences): IFormattingPreferences = {
+    pref.setPreference(AlignParameters, true)
+      .setPreference(DoubleIndentClassDeclaration, true)
+    }
+
   val defaultSettings = Defaults.defaultSettings ++ Seq(
     libraryDependencies ++= commonDeps,
     resolvers ++= commonResolvers,
@@ -43,7 +50,8 @@ object CommonsBuild extends Build {
     organization := "com.wajam",
     version := "0.1-SNAPSHOT",
     scalaVersion := "2.10.2",
-    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature")
+    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature"),
+    ScalariformKeys.preferences := configureScalariform(FormattingPreferences())
   )
   
   lazy val root = Project("commons", file(".")).settings(defaultSettings: _*)
