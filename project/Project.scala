@@ -52,7 +52,7 @@ object CommonsBuild extends Build {
     .aggregate(caching)
     .aggregate(asyncclient)
 
-  lazy val core = Project("commons-core", file("commons-commons"))
+  lazy val core = Project("commons-core", file("commons-core"))
     .settings(defaultSettings: _*)
 
   lazy val mysql = Project("commons-mysql", file("commons-mysql"))
