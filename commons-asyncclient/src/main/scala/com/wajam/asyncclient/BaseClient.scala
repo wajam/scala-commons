@@ -9,10 +9,6 @@ trait BaseClient[Request, Response] {
 
   private[asyncclient] implicit val ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(config.threadPoolSize))
 
-  private object ResponseConverter extends (client.Response => Response) {
-    def apply(r: client.Response) = to(r)
-  }
-
   protected def config: BaseHttpClientConfig
 
   protected def contentType: String
@@ -30,19 +26,19 @@ trait BaseClient[Request, Response] {
   }
 
   def get(myUrl: String): Future[Response] = {
-    httpClient(url(myUrl) > ResponseConverter)
+    httpClient(url(myUrl) > to _)
   }
 
   def post(myUrl: String, value: Request): Future[Response] = {
-    httpClient(setBody(url(myUrl).POST, value) > ResponseConverter)
+    httpClient(setBody(url(myUrl).POST, value) > to _)
   }
 
   def put(myUrl: String, value: Request): Future[Response] = {
-    httpClient(setBody(url(myUrl).PUT, value) > ResponseConverter)
+    httpClient(setBody(url(myUrl).PUT, value) > to _)
   }
 
   def delete(myUrl: String): Future[Response] = {
-    httpClient(url(myUrl).DELETE > ResponseConverter)
+    httpClient(url(myUrl).DELETE > to _)
   }
 
   protected def to(value: client.Response): Response

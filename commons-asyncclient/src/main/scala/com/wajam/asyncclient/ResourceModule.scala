@@ -8,6 +8,7 @@ trait ResourceModule {
   protected def client: JsonClient
 
   implicit protected val formats: Formats
+
   implicit protected def ec = client.ec
 
   private def fromValue[Value](value: Value): JValue = {
@@ -19,39 +20,29 @@ trait ResourceModule {
     protected def url: String
   }
 
-  trait PostableResource[Value] {
-    this: Resource =>
-
+  trait CreatableResource[Value] extends Resource {
     def create(value: Value)(implicit mf: Manifest[Value]): AsyncJsonResponse[Value] = {
       client.post(url, fromValue(value)).map(_.as[Value])
     }
   }
 
-  trait ApplicableResource[Key, R <: Resource] {
-    this: Resource =>
-
+  trait ApplicableResource[Key, R <: Resource] extends Resource {
     def apply(key: Key): R
   }
 
-  trait GettableResource[Value] {
-    this: Resource =>
-
+  trait GettableResource[Value] extends Resource {
     def get()(implicit mf: Manifest[Value]): AsyncJsonResponse[Value] = {
       client.get(url).map(_.as[Value])
     }
   }
 
-  trait UpdatableResource[Value] {
-    this: Resource =>
-
+  trait UpdatableResource[Value] extends Resource {
     def update(value: Value)(implicit mf: Manifest[Value]): AsyncJsonResponse[Value] = {
       client.put(url, fromValue(value)).map(_.as[Value])
     }
   }
 
-  trait DeletableResource[Value] {
-    this: Resource =>
-
+  trait DeletableResource[Value] extends Resource {
     def delete()(implicit mf: Manifest[Value]): AsyncJsonResponse[Value] = {
       client.delete(url).map(_.as[Value])
     }
