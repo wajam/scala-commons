@@ -9,8 +9,6 @@ trait ResourceModule {
 
   implicit protected val formats: Formats
 
-  implicit protected def ec = client.ec
-
   private def fromValue[Value](value: Value): JValue = {
     import net.liftweb.json.Extraction.decompose
     decompose(value)
@@ -22,7 +20,7 @@ trait ResourceModule {
 
   trait CreatableResource[Value] extends Resource {
     def create(value: Value)(implicit mf: Manifest[Value]): AsyncJsonResponse[Value] = {
-      client.post(url, fromValue(value)).map(_.as[Value])
+      client.post(url, fromValue(value))(_.as[Value])
     }
   }
 
@@ -32,19 +30,19 @@ trait ResourceModule {
 
   trait GettableResource[Value] extends Resource {
     def get()(implicit mf: Manifest[Value]): AsyncJsonResponse[Value] = {
-      client.get(url).map(_.as[Value])
+      client.get(url)(_.as[Value])
     }
   }
 
   trait UpdatableResource[Value] extends Resource {
     def update(value: Value)(implicit mf: Manifest[Value]): AsyncJsonResponse[Value] = {
-      client.put(url, fromValue(value)).map(_.as[Value])
+      client.put(url, fromValue(value))(_.as[Value])
     }
   }
 
   trait DeletableResource[Value] extends Resource {
     def delete()(implicit mf: Manifest[Value]): AsyncJsonResponse[Value] = {
-      client.delete(url).map(_.as[Value])
+      client.delete(url)(_.as[Value])
     }
   }
 

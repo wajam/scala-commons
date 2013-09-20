@@ -5,9 +5,9 @@ import dispatch._
 import com.ning.http.client
 import java.util.concurrent.Executors
 
-trait BaseClient[Request, Response] {
+trait BaseClient[Request, InnerResponse] {
 
-  private[asyncclient] implicit val ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(config.threadPoolSize))
+  private implicit val ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(config.threadPoolSize))
 
   protected def config: BaseHttpClientConfig
 
@@ -25,23 +25,23 @@ trait BaseClient[Request, Response] {
     req.setHeader("content-type", contentType).setBody(from(value))
   }
 
-  def get(myUrl: String): Future[Response] = {
-    httpClient(url(myUrl) > to _)
+  def get[A](myUrl: String)(as: InnerResponse => A): Future[A] = {
+    httpClient(url(myUrl) > (v => as(to(v))))
   }
 
-  def post(myUrl: String, value: Request): Future[Response] = {
-    httpClient(setBody(url(myUrl).POST, value) > to _)
+  def post[A](myUrl: String, value: Request)(as: InnerResponse => A): Future[A] = {
+    httpClient(setBody(url(myUrl).POST, value) > (v => as(to(v))))
   }
 
-  def put(myUrl: String, value: Request): Future[Response] = {
-    httpClient(setBody(url(myUrl).PUT, value) > to _)
+  def put[A](myUrl: String, value: Request)(as: InnerResponse => A): Future[A] = {
+    httpClient(setBody(url(myUrl).PUT, value) > (v => as(to(v))))
   }
 
-  def delete(myUrl: String): Future[Response] = {
-    httpClient(url(myUrl).DELETE > to _)
+  def delete[A](myUrl: String)(as: InnerResponse => A): Future[A] = {
+    httpClient(url(myUrl).DELETE > (v => as(to(v))))
   }
 
-  protected def to(value: client.Response): Response
+  protected def to(value: client.Response): InnerResponse
 
   protected def from(value: Request): Array[Byte]
 
