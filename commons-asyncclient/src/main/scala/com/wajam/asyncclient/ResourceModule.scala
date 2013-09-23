@@ -5,7 +5,7 @@ import scala.concurrent.Future
 import net.liftweb.json.JsonAST.JValue
 import scala.language.higherKinds
 
-trait ResourceModule[I, TypedResponse[_], Inner <: ConvertableResponse[TypedResponse]] {
+trait ResourceModule[I, Inner <: ConvertableResponse[TypedResponse], TypedResponse[_]] {
 
   protected def client: AsyncClient
 
@@ -52,7 +52,7 @@ trait Decomposer[I] {
   def decompose[Value](value: Value): I
 }
 
-abstract class JsonResourceModule extends ResourceModule[JValue, TypedJsonResponse, JsonResponse] with JsonOperations {
+abstract class JsonResourceModule extends ResourceModule[JValue, JsonResponse, TypedJsonResponse] with JsonOperations {
   implicit protected def requestHandler: RequestHandler[JValue] = JsonRequestable
 
   implicit protected def responseHandler: ResponseHandler[JsonResponse] = JsonRespondable
