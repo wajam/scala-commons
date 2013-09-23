@@ -18,7 +18,7 @@ object CommonsBuild extends Build {
   val commonDeps = Seq(
     "org.slf4j" % "slf4j-api" % "1.6.4",
     "nl.grons" %% "metrics-scala" % "2.2.0" exclude("org.slf4j", "slf4j-api"),
-    "org.scalatest" %% "scalatest" % "1.9.1" % "test"
+    "org.scalatest" %% "scalatest" % "1.9.2" % "it, test"
   )
 
   val mysqlDeps = Seq(
@@ -42,7 +42,7 @@ object CommonsBuild extends Build {
       .setPreference(DoubleIndentClassDeclaration, true)
     }
 
-  val defaultSettings = Defaults.defaultSettings ++ Seq(
+  val defaultSettings = Defaults.defaultSettings ++ Defaults.itSettings ++ Seq(
     libraryDependencies ++= commonDeps,
     resolvers ++= commonResolvers,
     retrieveManaged := true,
@@ -54,28 +54,43 @@ object CommonsBuild extends Build {
     ScalariformKeys.preferences := configureScalariform(FormattingPreferences())
   )
   
-  lazy val root = Project("commons", file(".")).settings(defaultSettings: _*)
+  lazy val root = Project("commons", file("."))
+    .configs(IntegrationTest)
+    .settings(defaultSettings: _*)
+    .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Test"))))
     .aggregate(core)
     .aggregate(mysql)
     .aggregate(caching)
     .aggregate(asyncclient)
 
   lazy val core = Project("commons-core", file("commons-core"))
+    .configs(IntegrationTest)
     .settings(defaultSettings: _*)
+    .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Test"))))
+    .settings(parallelExecution in IntegrationTest := false)
 
   lazy val mysql = Project("commons-mysql", file("commons-mysql"))
+    .configs(IntegrationTest)
     .settings(defaultSettings: _*)
+    .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Test"))))
+    .settings(parallelExecution in IntegrationTest := false)
     .settings(libraryDependencies ++= mysqlDeps)
     .dependsOn(core)
 
   lazy val caching = Project("commons-caching", file("commons-caching"))
+    .configs(IntegrationTest)
     .settings(defaultSettings: _*)
     .settings(libraryDependencies ++= cachingDeps)
+    .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Test"))))
+    .settings(parallelExecution in IntegrationTest := false)
     .dependsOn(core)
 
   lazy val asyncclient = Project("commons-asyncclient", file("commons-asyncclient"))
+    .configs(IntegrationTest)
     .settings(defaultSettings: _*)
     .settings(libraryDependencies ++= asyncclientDeps)
+    .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Test"))))
+    .settings(parallelExecution in IntegrationTest := false)
     .dependsOn(core)
 
 }

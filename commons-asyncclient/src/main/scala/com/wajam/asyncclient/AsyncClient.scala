@@ -17,42 +17,44 @@ class AsyncClient(config: BaseHttpClientConfig) {
     setMaximumConnectionsTotal(config.maximumConnectionsTotal)
   )
 
-  private def setBody[I](req: Req, value: I, handler: RequestHandler[I]): Req = {
+  private def setBody[RequestBody](req: Req, value: RequestBody,
+                                   handler: RequestHandler[RequestBody]): Req = {
     req.setHeader("content-type", handler.contentType).setBody(handler.from(value))
   }
 
-  def get[Inner, O](myUrl: String)
-                   (as: Inner => O)
-                   (implicit handler: ResponseHandler[Inner]): Future[O] = {
+  def get[Response, O](myUrl: String)
+                      (as: Response => O)
+                      (implicit handler: ResponseHandler[Response]): Future[O] = {
     httpClient(url(myUrl) > (v => as(handler.to(v))))
   }
 
-  def post[I, Inner, O](myUrl: String, value: I)
-                       (as: Inner => O)
-                       (implicit requestHandler: RequestHandler[I],
-                        responseHandler: ResponseHandler[Inner]): Future[O] = {
+  def post[RequestBody, Response, O](myUrl: String, value: RequestBody)
+                                    (as: Response => O)
+                                    (implicit requestHandler: RequestHandler[RequestBody],
+                                     responseHandler: ResponseHandler[Response]): Future[O] = {
     httpClient(setBody(url(myUrl).POST, value, requestHandler) > (v => as(responseHandler.to(v))))
   }
 
-  def put[I, Inner, O](myUrl: String, value: I)
-                      (as: Inner => O)
-                      (implicit requestHandler: RequestHandler[I],
-                       responseHandler: ResponseHandler[Inner]): Future[O] = {
+  def put[RequestBody, Response, O](myUrl: String, value: RequestBody)
+                                   (as: Response => O)
+                                   (implicit requestHandler: RequestHandler[RequestBody],
+                                    responseHandler: ResponseHandler[Response]): Future[O] = {
     httpClient(setBody(url(myUrl).PUT, value, requestHandler) > (v => as(responseHandler.to(v))))
   }
 
-  def delete[Inner, O](myUrl: String)
-                      (as: Inner => O)
-                      (implicit handler: ResponseHandler[Inner]): Future[O] = {
+  def delete[Response, O](myUrl: String)
+                         (as: Response => O)
+                         (implicit handler: ResponseHandler[Response]): Future[O] = {
     httpClient(url(myUrl).DELETE > (v => as(handler.to(v))))
   }
 }
 
-trait RequestHandler[I] {
+trait RequestHandler[RequestBody] {
   def contentType: String
-  def from(value: I): Array[Byte]
+
+  def from(value: RequestBody): Array[Byte]
 }
 
-trait ResponseHandler[O] {
-  def to(value: client.Response): O
+trait ResponseHandler[Response] {
+  def to(value: client.Response): Response
 }
