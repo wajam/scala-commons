@@ -1,8 +1,6 @@
 package com.wajam.asyncclient
 
-import net.liftweb.json.Formats
 import scala.concurrent.Future
-import net.liftweb.json.JsonAST.JValue
 import scala.language.higherKinds
 
 trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedResponse], TypedResponse[_]] {
@@ -14,8 +12,6 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
   implicit protected def responseHandler: ResponseHandler[ResponseMessage]
 
   implicit protected def decomposer: Decomposer[RequestBody]
-
-  implicit protected def formats: Formats
 
   trait Resource {
     protected def url: String
@@ -55,10 +51,3 @@ trait Decomposer[I] {
   def decompose[Value](value: Value): I
 }
 
-abstract class JsonResourceModule extends ResourceModule[JValue, JsonResponse, TypedJsonResponse] with JsonOperations {
-  implicit protected def requestHandler: RequestHandler[JValue] = JsonRequestable
-
-  implicit protected def responseHandler: ResponseHandler[JsonResponse] = JsonRespondable
-
-  implicit protected def decomposer: Decomposer[JValue] = JsonDecomposer
-}

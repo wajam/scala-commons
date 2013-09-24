@@ -13,7 +13,7 @@ trait JsonOperations {
   protected def charset: String
   implicit protected def formats: Formats
 
-  implicit object JsonRequestable extends RequestHandler[JValue] {
+  implicit object JsonRequestHandler extends RequestHandler[JValue] {
     val contentType = "application/json"
 
     def from(value: JValue): Array[Byte] = {
@@ -23,7 +23,7 @@ trait JsonOperations {
     }
   }
 
-  implicit object JsonRespondable extends ResponseHandler[JsonResponse] {
+  implicit object JsonResponseHandler extends ResponseHandler[JsonResponse] {
     def to(value: Response): JsonResponse = JsonResponse(value.getStatusCode, as.String(value))
   }
 
@@ -35,10 +35,10 @@ trait JsonOperations {
 
 }
 
-case class JsonResponse(code: Int, str: String) extends ConvertableResponse[TypedJsonResponse] {
+case class JsonResponse(code: Int, str: String)(implicit formats: Formats) extends ConvertableResponse[TypedJsonResponse] {
   val json: Option[JValue] = Try(JsonParser.parse(str)).toOption
 
-  def as[A](implicit mf: Manifest[A], formats: Formats) = TypedJsonResponse[A](code, str, json)
+  def as[A](implicit mf: Manifest[A]) = TypedJsonResponse[A](code, str, json)
 }
 
 case class TypedJsonResponse[A](code: Int, str: String, json: Option[JValue])
@@ -48,4 +48,12 @@ case class TypedJsonResponse[A](code: Int, str: String, json: Option[JValue])
       json.flatMap(j => Try(j.extract[A]).toOption)
     } else None
   }
+}
+
+trait JsonResourceModule extends ResourceModule[JValue, JsonResponse, TypedJsonResponse] with JsonOperations {
+  implicit protected def requestHandler: RequestHandler[JValue] = JsonRequestHandler
+
+  implicit protected def responseHandler: ResponseHandler[JsonResponse] = JsonResponseHandler
+
+  implicit protected def decomposer: Decomposer[JValue] = JsonDecomposer
 }

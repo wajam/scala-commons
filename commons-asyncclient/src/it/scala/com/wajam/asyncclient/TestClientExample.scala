@@ -3,7 +3,6 @@ package com.wajam.asyncclient
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import com.ning.http.client.Response
-import scala.xml
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
