@@ -7,16 +7,16 @@ import com.ning.http.client.Response
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class TestResourceExample extends FunSuite with ShouldMatchers {
-  test("should be kind") {
-    import TestResourceExample._
+class TestResource extends FunSuite with ShouldMatchers {
+  test("should be able to create a simple resource") {
+    import TestResource._
     val wXml = Await.result(ResourceExample.root.get(), 10.seconds)
     (wXml.elem \ "head" \ "title").text should be("Example Domain")
 
   }
 }
 
-object TestResourceExample {
+object TestResource {
 
   object ResourceExample extends ResourceModule[Nothing, WrappedXml, UntypedWrappedXml] {
     protected def client: AsyncClient = new AsyncClient(HttpClientConfig())

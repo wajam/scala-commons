@@ -6,7 +6,7 @@ import com.ning.http.client.Response
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class TestClientExample extends FunSuite with ShouldMatchers {
+class TestAsyncClient extends FunSuite with ShouldMatchers {
 
   test("should be able to get content from a website") {
     implicit object HtmlResponse extends ResponseHandler[xml.Elem] {
