@@ -2,8 +2,7 @@ package com.wajam.asyncclient
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
-import com.yammer.metrics.scala.Instrumented
-import com.yammer.metrics.core.TimerContext
+import com.yammer.metrics.scala.{Timer, Instrumented}
 import java.util.concurrent.Executors
 
 trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedResponse], TypedResponse[_]] extends Instrumented {
@@ -19,9 +18,10 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
   // Execution context used to stop timers. I guess that's enough threads
   implicit private val ec = ExecutionContext.fromExecutorService(Executors.newSingleThreadExecutor())
 
-  private def timeAction[T](timer: TimerContext)(action: => Future[T]): Future[T] = {
+  private def timeAction[T](timer: Timer)(action: => Future[T]): Future[T] = {
+    val context = timer.timerContext()
     action onComplete {
-      case _ => timer.stop()
+      case _ => context.stop()
     }
     action
   }
@@ -36,7 +36,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
     lazy val createMeter = metrics.timer(s"$name-creates")
 
     def create(value: Value)(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
-      timeAction(createMeter.timerContext()) {
+      timeAction(createMeter) {
         client.post[RequestBody, ResponseMessage, TypedResponse[Value]](url, decomposer.decompose(value))(_.as[Value])
       }
     }
@@ -50,7 +50,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
     lazy val getMeter = metrics.timer(s"$name-gets")
 
     def get()(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
-      timeAction(getMeter.timerContext()) {
+      timeAction(getMeter) {
         client.get[ResponseMessage, TypedResponse[Value]](url)(_.as[Value])
       }
     }
@@ -60,7 +60,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
     lazy val updateMeter = metrics.timer(s"$name-updates")
 
     def update(value: Value)(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
-      timeAction(updateMeter.timerContext()) {
+      timeAction(updateMeter) {
         client.put[RequestBody, ResponseMessage, TypedResponse[Value]](url, decomposer.decompose(value))(_.as[Value])
       }
     }
@@ -70,7 +70,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
     lazy val deleteMeter = metrics.timer(s"$name-deletes")
 
     def delete()(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
-      timeAction(deleteMeter.timerContext()) {
+      timeAction(deleteMeter) {
         client.delete[ResponseMessage, TypedResponse[Value]](url)(_.as[Value])
       }
     }
