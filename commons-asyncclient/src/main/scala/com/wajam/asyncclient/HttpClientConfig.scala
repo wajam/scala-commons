@@ -9,9 +9,13 @@ trait BaseHttpClientConfig {
   def threadPoolSize: Int
 }
 
+object BaseHttpClientConfig {
+  val unlimited = -1
+}
+
 case class HttpClientConfig(allowPoolingConnection: Boolean = false,
                             connectionTimeoutInMs: Int = 1000,
                             requestTimeoutInMs: Int = 1000,
-                            maximumConnectionsPerHost: Int = 1,
-                            maximumConnectionsTotal: Int = 1,
+                            maximumConnectionsPerHost: Int = BaseHttpClientConfig.unlimited,
+                            maximumConnectionsTotal: Int = BaseHttpClientConfig.unlimited,
                             threadPoolSize: Int = 1) extends BaseHttpClientConfig

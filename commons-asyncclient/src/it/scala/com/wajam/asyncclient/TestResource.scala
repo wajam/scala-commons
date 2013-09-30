@@ -42,7 +42,8 @@ object TestResource {
     val root = RootResource
 
     object RootResource extends GettableResource[ExampleResponse] {
-      protected def url: String = "http://www.example.org"
+      protected val url = "http://www.example.org"
+      protected val name = "example"
     }
 
   }
