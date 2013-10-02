@@ -28,23 +28,10 @@ class AsyncClient(config: BaseHttpClientConfig) {
     httpClient(myUrl > (v => handler.to(v)))
   }
 
-  def typedGet[Response, O](myUrl: Req)
-                           (as: Response => O)
-                           (implicit handler: ResponseHandler[Response]): Future[O] = {
-    httpClient(myUrl > (v => as(handler.to(v))))
-  }
-
   def post[RequestBody, Response](myUrl: Req, value: RequestBody)
                                  (implicit requestHandler: RequestHandler[RequestBody],
                                   responseHandler: ResponseHandler[Response]): Future[Response] = {
     httpClient(setBody(myUrl.POST, value, requestHandler) > (v => responseHandler.to(v)))
-  }
-
-  def typedPost[RequestBody, Response, O](myUrl: Req, value: RequestBody)
-                                         (as: Response => O)
-                                         (implicit requestHandler: RequestHandler[RequestBody],
-                                          responseHandler: ResponseHandler[Response]): Future[O] = {
-    httpClient(setBody(myUrl.POST, value, requestHandler) > (v => as(responseHandler.to(v))))
   }
 
   def put[RequestBody, Response](myUrl: Req, value: RequestBody)
@@ -53,22 +40,9 @@ class AsyncClient(config: BaseHttpClientConfig) {
     httpClient(setBody(myUrl.PUT, value, requestHandler) > (v => responseHandler.to(v)))
   }
 
-  def typedPut[RequestBody, Response, O](myUrl: Req, value: RequestBody)
-                                        (as: Response => O)
-                                        (implicit requestHandler: RequestHandler[RequestBody],
-                                         responseHandler: ResponseHandler[Response]): Future[O] = {
-    httpClient(setBody(myUrl.PUT, value, requestHandler) > (v => as(responseHandler.to(v))))
-  }
-
   def delete[Response](myUrl: Req)
                       (implicit handler: ResponseHandler[Response]): Future[Response] = {
     httpClient(myUrl.DELETE > (v => handler.to(v)))
-  }
-
-  def typedDelete[Response, O](myUrl: Req)
-                              (as: Response => O)
-                              (implicit handler: ResponseHandler[Response]): Future[O] = {
-    httpClient(myUrl.DELETE > (v => as(handler.to(v))))
   }
 }
 

@@ -11,7 +11,7 @@ class TestResource extends FunSuite with ShouldMatchers {
   test("should be able to create a simple resource") {
     import TestResource._
     val wXml = Await.result(ResourceExample.root.get(), 10.seconds)
-    (wXml.elem \ "head" \ "title").text should be("Example Domain")
+    (wXml.elem \ "head" \ "title").text should include("Wajam")
 
   }
 }
@@ -25,11 +25,11 @@ object TestResource {
 
     implicit protected def responseHandler = new ResponseHandler[WrappedXml] {
       def to(response: Response) = {
-        WrappedXml(xml.XML.withSAXParser(factory.newSAXParser).loadString(response.getResponseBody.dropWhile(_ != '\n')))
+        WrappedXml(xml.XML.withSAXParser(factory.newSAXParser).loadString(response.getResponseBody))
       }
 
       private lazy val factory = {
-        val spf = javax.xml.parsers.SAXParserFactory.newInstance()
+        val spf = new org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl()
         spf.setNamespaceAware(true)
         spf
       }
@@ -42,7 +42,7 @@ object TestResource {
     val root = RootResource
 
     object RootResource extends GettableResource[ExampleResponse] {
-      protected val url = "http://www.example.org"
+      protected val url = "http://www.wajam.com"
       protected val name = "example"
     }
 

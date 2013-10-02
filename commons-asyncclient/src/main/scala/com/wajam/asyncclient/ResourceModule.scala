@@ -38,7 +38,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
 
     def create(value: Value)(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
       timeAction(createMeter) {
-        client.typedPost[RequestBody, ResponseMessage, TypedResponse[Value]](url, decomposer.decompose(value))(_.as[Value])
+        client.post(url, decomposer.decompose(value)).map(_.as[Value])
       }
     }
   }
@@ -52,7 +52,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
 
     def get()(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
       timeAction(getMeter) {
-        client.typedGet[ResponseMessage, TypedResponse[Value]](url)(_.as[Value])
+        client.get(url).map(_.as[Value])
       }
     }
   }
@@ -62,7 +62,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
 
     def update(value: Value)(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
       timeAction(updateMeter) {
-        client.typedPut[RequestBody, ResponseMessage, TypedResponse[Value]](url, decomposer.decompose(value))(_.as[Value])
+        client.put(url, decomposer.decompose(value)).map(_.as[Value])
       }
     }
   }
@@ -72,7 +72,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
 
     def delete()(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
       timeAction(deleteMeter) {
-        client.typedDelete[ResponseMessage, TypedResponse[Value]](url)(_.as[Value])
+        client.delete(url).map(_.as[Value])
       }
     }
   }
