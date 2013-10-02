@@ -5,7 +5,7 @@ import org.scalatest.matchers.ShouldMatchers
 import com.ning.http.client.Response
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import com.wajam.asyncclient.AsyncClient.stringToReq
+import com.wajam.asyncclient.AsyncClient.stringToRequest
 
 class TestAsyncClient extends FunSuite with ShouldMatchers {
 

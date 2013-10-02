@@ -4,7 +4,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
 import com.yammer.metrics.scala.{Timer, Instrumented}
 import java.util.concurrent.Executors
-import com.wajam.asyncclient.AsyncClient.stringToReq
+import com.wajam.asyncclient.AsyncClient.stringToRequest
 
 trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedResponse], TypedResponse[_]] extends Instrumented {
 

@@ -23,31 +23,41 @@ class AsyncClient(config: BaseHttpClientConfig) {
     req.setHeader("content-type", handler.contentType).setBody(handler.from(value))
   }
 
-  def get[Response](myUrl: Req)
+  def get[Response](request: Request)
                    (implicit handler: ResponseHandler[Response]): Future[Response] = {
-    httpClient(myUrl > (v => handler.to(v)))
+    httpClient(request.inner > (v => handler.to(v)))
   }
 
-  def post[RequestBody, Response](myUrl: Req, value: RequestBody)
+  def post[RequestBody, Response](request: Request, value: RequestBody)
                                  (implicit requestHandler: RequestHandler[RequestBody],
                                   responseHandler: ResponseHandler[Response]): Future[Response] = {
-    httpClient(setBody(myUrl.POST, value, requestHandler) > (v => responseHandler.to(v)))
+    httpClient(setBody(request.inner.POST, value, requestHandler) > (v => responseHandler.to(v)))
   }
 
-  def put[RequestBody, Response](myUrl: Req, value: RequestBody)
+  def put[RequestBody, Response](request: Request, value: RequestBody)
                                 (implicit requestHandler: RequestHandler[RequestBody],
                                  responseHandler: ResponseHandler[Response]): Future[Response] = {
-    httpClient(setBody(myUrl.PUT, value, requestHandler) > (v => responseHandler.to(v)))
+    httpClient(setBody(request.inner.PUT, value, requestHandler) > (v => responseHandler.to(v)))
   }
 
-  def delete[Response](myUrl: Req)
+  def delete[Response](request: Request)
                       (implicit handler: ResponseHandler[Response]): Future[Response] = {
-    httpClient(myUrl.DELETE > (v => handler.to(v)))
+    httpClient(request.inner.DELETE > (v => handler.to(v)))
   }
 }
 
+case class Request(inner: Req) {
+  def /(path: String) = Request(inner / path)
+
+  def params(paramList: Map[String, String]) = Request(inner <<? paramList)
+}
+
 object AsyncClient {
-  implicit def stringToReq(myUrl: String): Req = url(myUrl)
+  implicit def stringToRequest(myUrl: String): Request = Request(url(myUrl))
+
+  def host(url: String) = Request(dispatch.host(url))
+
+  def host(url: String, port: Int) = Request(dispatch.host(url, port))
 }
 
 trait RequestHandler[RequestBody] {
