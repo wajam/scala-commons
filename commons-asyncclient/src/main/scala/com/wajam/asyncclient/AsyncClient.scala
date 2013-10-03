@@ -8,6 +8,8 @@ import scala.language.implicitConversions
 
 class AsyncClient(config: BaseHttpClientConfig) {
 
+  import AsyncClient.Request
+
   private implicit val ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(config.threadPoolSize))
 
   protected val httpClient = Http.configure(_.
@@ -46,18 +48,27 @@ class AsyncClient(config: BaseHttpClientConfig) {
   }
 }
 
-case class Request(inner: Req) {
-  def /(path: String) = Request(inner / path)
-
-  def params(paramList: Map[String, String]) = Request(inner <<? paramList)
-}
-
 object AsyncClient {
-  implicit def stringToRequest(myUrl: String): Request = Request(url(myUrl))
 
-  def host(url: String) = Request(dispatch.host(url))
+  sealed trait Request {
+    private[asyncclient] def inner: Req
 
-  def host(url: String, port: Int) = Request(dispatch.host(url, port))
+    def /(path: String)
+
+    def params(paramList: Map[String, String])
+  }
+
+  private case class RequestImpl(inner: Req) extends Request {
+    def /(path: String) = RequestImpl(inner / path)
+
+    def params(paramList: Map[String, String]) = RequestImpl(inner <<? paramList)
+  }
+
+  implicit def stringToRequest(myUrl: String): Request = RequestImpl(url(myUrl))
+
+  def host(url: String): Request = RequestImpl(dispatch.host(url))
+
+  def host(url: String, port: Int): Request = RequestImpl(dispatch.host(url, port))
 }
 
 trait RequestHandler[RequestBody] {
