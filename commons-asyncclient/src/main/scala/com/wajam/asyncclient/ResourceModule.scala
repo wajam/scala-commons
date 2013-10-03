@@ -4,6 +4,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
 import com.yammer.metrics.scala.{Timer, Instrumented}
 import java.util.concurrent.Executors
+import com.wajam.asyncclient.AsyncClient.stringToRequest
 
 trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedResponse], TypedResponse[_]] extends Instrumented {
 
@@ -37,7 +38,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
 
     def create(value: Value)(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
       timeAction(createMeter) {
-        client.post[RequestBody, ResponseMessage, TypedResponse[Value]](url, decomposer.decompose(value))(_.as[Value])
+        client.post(url, decomposer.decompose(value)).map(_.as[Value])
       }
     }
   }
@@ -51,7 +52,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
 
     def get()(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
       timeAction(getMeter) {
-        client.get[ResponseMessage, TypedResponse[Value]](url)(_.as[Value])
+        client.get(url).map(_.as[Value])
       }
     }
   }
@@ -61,7 +62,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
 
     def update(value: Value)(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
       timeAction(updateMeter) {
-        client.put[RequestBody, ResponseMessage, TypedResponse[Value]](url, decomposer.decompose(value))(_.as[Value])
+        client.put(url, decomposer.decompose(value)).map(_.as[Value])
       }
     }
   }
@@ -71,7 +72,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
 
     def delete()(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
       timeAction(deleteMeter) {
-        client.delete[ResponseMessage, TypedResponse[Value]](url)(_.as[Value])
+        client.delete(url).map(_.as[Value])
       }
     }
   }

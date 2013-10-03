@@ -5,6 +5,7 @@ import org.scalatest.matchers.ShouldMatchers
 import com.ning.http.client.Response
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import com.wajam.asyncclient.AsyncClient.stringToRequest
 
 class TestAsyncClient extends FunSuite with ShouldMatchers {
 
@@ -15,15 +16,15 @@ class TestAsyncClient extends FunSuite with ShouldMatchers {
       def to(response: Response) = xml.XML.withSAXParser(factory.newSAXParser).loadString(response.getResponseBody.dropWhile(_ != '\n'))
 
       private lazy val factory = {
-        val spf = javax.xml.parsers.SAXParserFactory.newInstance()
+        val spf = new org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl()
         spf.setNamespaceAware(true)
         spf
       }
     }
     val client = new AsyncClient(HttpClientConfig())
-    Await.result(client.get("http://www.example.org")(extractTitle), 10.seconds) should be("Example Domain")
+    extractTitle(Await.result(client.get("http://www.wajam.com"), 10.seconds)) should include("Wajam")
   }
 
-  private def extractTitle(x: xml.Elem) = (x \ "head" \ "title").text
+  private def extractTitle(x: xml.Elem): String = (x \ "head" \ "title").text
 
 }
