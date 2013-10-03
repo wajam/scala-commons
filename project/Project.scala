@@ -62,6 +62,7 @@ object CommonsBuild extends Build {
     .settings(defaultSettings: _*)
     .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Test"))))
     .aggregate(core)
+    .aggregate(tracing)
     .aggregate(mysql)
     .aggregate(caching)
     .aggregate(asyncclient)
@@ -72,6 +73,14 @@ object CommonsBuild extends Build {
     .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Test"))))
     .settings(parallelExecution in IntegrationTest := false)
 
+  lazy val tracing= Project("commons-tracing", file("commons-tracing"))
+    .configs(IntegrationTest)
+    .settings(defaultSettings: _*)
+    .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Test"))))
+    .settings(parallelExecution in IntegrationTest := false)
+    .dependsOn(core)
+
+
   lazy val mysql = Project("commons-mysql", file("commons-mysql"))
     .configs(IntegrationTest)
     .settings(defaultSettings: _*)
@@ -79,6 +88,7 @@ object CommonsBuild extends Build {
     .settings(parallelExecution in IntegrationTest := false)
     .settings(libraryDependencies ++= mysqlDeps)
     .dependsOn(core)
+    .dependsOn(tracing)
 
   lazy val caching = Project("commons-caching", file("commons-caching"))
     .configs(IntegrationTest)
@@ -87,6 +97,7 @@ object CommonsBuild extends Build {
     .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Test"))))
     .settings(parallelExecution in IntegrationTest := false)
     .dependsOn(core)
+    .dependsOn(tracing)
 
   lazy val asyncclient = Project("commons-asyncclient", file("commons-asyncclient"))
     .configs(IntegrationTest)
@@ -95,5 +106,6 @@ object CommonsBuild extends Build {
     .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Test"))))
     .settings(parallelExecution in IntegrationTest := false)
     .dependsOn(core)
+    .dependsOn(tracing)
 
 }
