@@ -7,7 +7,7 @@ import java.util.concurrent.Executors
 
 trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedResponse], TypedResponse[_]] extends Instrumented {
 
-  protected def client: AsyncClient
+  protected def client: BaseAsyncClient
 
   implicit protected def requestHandler: RequestHandler[RequestBody]
 
