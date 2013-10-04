@@ -6,13 +6,65 @@ import com.ning.http.client
 import java.util.concurrent.Executors
 import scala.language.implicitConversions
 
-class AsyncClient(config: BaseHttpClientConfig) {
+trait BaseAsyncClient {
 
-  import AsyncClient.Request
+  def get[Response](request: Request)
+                   (implicit handler: ResponseHandler[Response]): Future[Response]
+
+  def post[RequestBody, Response](request: Request, value: RequestBody)
+                                 (implicit requestHandler: RequestHandler[RequestBody],
+                                  responseHandler: ResponseHandler[Response]): Future[Response]
+
+  def put[RequestBody, Response](request: Request, value: RequestBody)
+                                (implicit requestHandler: RequestHandler[RequestBody],
+                                 responseHandler: ResponseHandler[Response]): Future[Response]
+
+  def delete[Response](request: Request)
+                      (implicit handler: ResponseHandler[Response]): Future[Response]
+}
+
+// --To build using an host
+//  host("en.wikipedia.org") / "wiki" / "Main_Page"
+//
+// Will yield:
+// http://en.wikipedia.org/wiki/Main_Page
+
+// --To build using an host with https
+//  secureHost("en.wikipedia.org") / "wiki" / "Main_Page"
+//
+// Will yield:
+// https://en.wikipedia.org/wiki/Main_Page
+
+// --To add parameters
+//  secureHost("en.wikipedia.org") / "w" / "index.php" params ("search" -> "Wikipedia")
+//
+// Will yield:
+// https://en.wikipedia.org/w/index.php?search=Wikipedia
+
+// --To build from an url
+//  url("https://en.wikipedia.org/w/index.php")
+//
+// Will yield:
+// https://en.wikipedia.org/w/index.php
+
+// --To build from an url with params
+//  url("https://en.wikipedia.org/w/index.php") params ("search" -> "Wikipedia")
+//
+// Will yield:
+// https://en.wikipedia.org/w/index.php?search=Wikipedia
+sealed trait Request {
+  private[asyncclient] def inner: Req
+
+  def /(path: String)
+
+  def params(paramList: Map[String, String])
+}
+
+class AsyncClient(config: BaseHttpClientConfig) extends BaseAsyncClient {
 
   private implicit val ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(config.threadPoolSize))
 
-  protected val httpClient = Http.configure(_.
+  private val httpClient = Http.configure(_.
     setAllowPoolingConnection(config.allowPoolingConnection).
     setConnectionTimeoutInMs(config.connectionTimeoutInMs).
     setRequestTimeoutInMs(config.requestTimeoutInMs).
@@ -49,44 +101,6 @@ class AsyncClient(config: BaseHttpClientConfig) {
 }
 
 object AsyncClient {
-
-  // --To build using an host
-  //  host("en.wikipedia.org") / "wiki" / "Main_Page"
-  //
-  // Will yield:
-  // http://en.wikipedia.org/wiki/Main_Page
-
-  // --To build using an host with https
-  //  secureHost("en.wikipedia.org") / "wiki" / "Main_Page"
-  //
-  // Will yield:
-  // https://en.wikipedia.org/wiki/Main_Page
-
-  // --To add parameters
-  //  secureHost("en.wikipedia.org") / "w" / "index.php" params ("search" -> "Wikipedia")
-  //
-  // Will yield:
-  // https://en.wikipedia.org/w/index.php?search=Wikipedia
-
-  // --To build from an url
-  //  url("https://en.wikipedia.org/w/index.php")
-  //
-  // Will yield:
-  // https://en.wikipedia.org/w/index.php
-
-  // --To build from an url with params
-  //  url("https://en.wikipedia.org/w/index.php") params ("search" -> "Wikipedia")
-  //
-  // Will yield:
-  // https://en.wikipedia.org/w/index.php?search=Wikipedia
-
-  sealed trait Request {
-    private[asyncclient] def inner: Req
-
-    def /(path: String): Request
-
-    def params(paramList: Map[String, String]): Request
-  }
 
   private case class RequestImpl(inner: Req) extends Request {
     def /(path: String) = RequestImpl(inner / path)
