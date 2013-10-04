@@ -96,9 +96,6 @@ object AsyncClient {
     override def toString(): String = inner.toRequest.getUrl
   }
 
-  // TODO: Remove? It is simply confusing, an using the "url" construct is easy.
-  implicit def stringToRequest(myUrl: String): Request = url(myUrl)
-
   def host(url: String): Request = RequestImpl(dispatch.host(url))
 
   def host(url: String, port: Int): Request = RequestImpl(dispatch.host(url, port))
