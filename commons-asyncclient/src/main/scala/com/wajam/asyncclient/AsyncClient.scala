@@ -50,25 +50,61 @@ class AsyncClient(config: BaseHttpClientConfig) {
 
 object AsyncClient {
 
+  // --To build using an host
+  //  host("en.wikipedia.org") / "wiki" / "Main_Page"
+  //
+  // Will yield:
+  // http://en.wikipedia.org/wiki/Main_Page
+
+  // --To build using an host with https
+  //  secureHost("en.wikipedia.org") / "wiki" / "Main_Page"
+  //
+  // Will yield:
+  // https://en.wikipedia.org/wiki/Main_Page
+
+  // --To add parameters
+  //  secureHost("en.wikipedia.org") / "w" / "index.php" params ("search" -> "Wikipedia")
+  //
+  // Will yield:
+  // https://en.wikipedia.org/w/index.php?search=Wikipedia
+
+  // --To build from an url
+  //  url("https://en.wikipedia.org/w/index.php")
+  //
+  // Will yield:
+  // https://en.wikipedia.org/w/index.php
+
+  // --To build from an url with params
+  //  url("https://en.wikipedia.org/w/index.php") params ("search" -> "Wikipedia")
+  //
+  // Will yield:
+  // https://en.wikipedia.org/w/index.php?search=Wikipedia
+
   sealed trait Request {
     private[asyncclient] def inner: Req
 
-    def /(path: String)
+    def /(path: String): Request
 
-    def params(paramList: Map[String, String])
+    def params(paramList: Map[String, String]): Request
   }
 
   private case class RequestImpl(inner: Req) extends Request {
     def /(path: String) = RequestImpl(inner / path)
 
     def params(paramList: Map[String, String]) = RequestImpl(inner <<? paramList)
-  }
 
-  implicit def stringToRequest(myUrl: String): Request = RequestImpl(url(myUrl))
+    override def toString(): String = inner.toRequest.getUrl
+  }
 
   def host(url: String): Request = RequestImpl(dispatch.host(url))
 
   def host(url: String, port: Int): Request = RequestImpl(dispatch.host(url, port))
+
+  def secureHost(url: String): Request = RequestImpl(dispatch.host(url).secure)
+
+  def secureHost(url: String, port: Int): Request = RequestImpl(dispatch.host(url, port).secure)
+
+  def url(url: String): Request = RequestImpl(dispatch.url(url))
 }
 
 trait RequestHandler[RequestBody] {

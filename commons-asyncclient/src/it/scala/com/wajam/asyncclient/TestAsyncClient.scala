@@ -5,7 +5,7 @@ import org.scalatest.matchers.ShouldMatchers
 import com.ning.http.client.Response
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import com.wajam.asyncclient.AsyncClient.stringToRequest
+import com.wajam.asyncclient.AsyncClient._
 
 class TestAsyncClient extends FunSuite with ShouldMatchers {
 
@@ -22,7 +22,7 @@ class TestAsyncClient extends FunSuite with ShouldMatchers {
       }
     }
     val client = new AsyncClient(HttpClientConfig())
-    extractTitle(Await.result(client.get("http://www.wajam.com"), 10.seconds)) should include("Wajam")
+    extractTitle(Await.result(client.get(url("http://www.wajam.com")), 10.seconds)) should include("Wajam")
   }
 
   private def extractTitle(x: xml.Elem): String = (x \ "head" \ "title").text
