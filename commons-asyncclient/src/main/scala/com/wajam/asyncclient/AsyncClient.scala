@@ -55,9 +55,9 @@ trait BaseAsyncClient {
 sealed trait Request {
   private[asyncclient] def inner: Req
 
-  def /(path: String)
+  def /(path: String): Request
 
-  def params(paramList: Map[String, String])
+  def params(paramList: Map[String, String]): Request
 }
 
 class AsyncClient(config: BaseHttpClientConfig) extends BaseAsyncClient {
