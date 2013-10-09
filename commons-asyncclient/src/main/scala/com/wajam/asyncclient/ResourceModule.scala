@@ -35,7 +35,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
   trait CreatableResource[Value] extends Resource {
     lazy val createMeter = metrics.timer(s"$name-creates")
 
-    def create(value: Value)(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
+    def create(value: Value, params: Map[String, String] = Map())(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
       timeAction(createMeter) {
         client.post(AsyncClient.url(url), decomposer.decompose(value)).map(_.as[Value])
       }
@@ -49,8 +49,18 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
   trait GettableResource[Value] extends Resource {
     lazy val getMeter = metrics.timer(s"$name-gets")
 
-    def get()(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
+    def get(params: Map[String, String] = Map())(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
       timeAction(getMeter) {
+        client.get(AsyncClient.url(url)).map(_.as[Value])
+      }
+    }
+  }
+
+  trait ListableResource[Value] extends Resource {
+    lazy val listMeter = metrics.timer(s"$name-lists")
+
+    def list(params: Map[String, String] = Map())(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
+      timeAction(listMeter) {
         client.get(AsyncClient.url(url)).map(_.as[Value])
       }
     }
@@ -59,7 +69,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
   trait UpdatableResource[Value] extends Resource {
     lazy val updateMeter = metrics.timer(s"$name-updates")
 
-    def update(value: Value)(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
+    def update(value: Value, params: Map[String, String] = Map())(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
       timeAction(updateMeter) {
         client.put(AsyncClient.url(url), decomposer.decompose(value)).map(_.as[Value])
       }
@@ -69,7 +79,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
   trait DeletableResource[Value] extends Resource {
     lazy val deleteMeter = metrics.timer(s"$name-deletes")
 
-    def delete()(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
+    def delete(params: Map[String, String] = Map())(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
       timeAction(deleteMeter) {
         client.delete(AsyncClient.url(url)).map(_.as[Value])
       }
