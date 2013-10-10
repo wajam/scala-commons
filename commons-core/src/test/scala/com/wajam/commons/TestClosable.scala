@@ -11,7 +11,7 @@ import org.scalatest.matchers.ShouldMatchers
 @RunWith(classOf[JUnitRunner])
 class TestClosable extends FunSuite with MockitoSugar with ShouldMatchers {
   test("should close after `using` complete normally") {
-    var mockClosable = mock[Closable]
+    val mockClosable = mock[Closable]
 
     import Closable.using
     using(mockClosable) { closable =>  }
@@ -20,7 +20,7 @@ class TestClosable extends FunSuite with MockitoSugar with ShouldMatchers {
   }
 
   test("should close after `using` exit with an exception") {
-    var mockClosable = mock[Closable]
+    val mockClosable = mock[Closable]
 
     evaluating {
       import Closable.using
@@ -36,11 +36,11 @@ class TestClosable extends FunSuite with MockitoSugar with ShouldMatchers {
       def close()
     }
 
-    var mockNotClosable = mock[NotClosableWithClose]
+    val mockNotClosableWithClose = mock[NotClosableWithClose]
 
     import Closable._
-    using(mockNotClosable) { closable =>  }
+    using(mockNotClosableWithClose) { closable =>  }
 
-    verify(mockNotClosable).close()
+    verify(mockNotClosableWithClose).close()
   }
 }
