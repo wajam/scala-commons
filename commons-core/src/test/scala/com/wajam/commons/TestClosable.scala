@@ -17,7 +17,6 @@ class TestClosable extends FunSuite with MockitoSugar with ShouldMatchers {
     using(mockClosable) { closable =>  }
 
     verify(mockClosable).close()
-    verifyNoMoreInteractions(mockClosable)
   }
 
   test("should close after `using` exit with an exception") {
@@ -29,6 +28,19 @@ class TestClosable extends FunSuite with MockitoSugar with ShouldMatchers {
     } should produce[IOException]
 
     verify(mockClosable).close()
-    verifyNoMoreInteractions(mockClosable)
+  }
+
+  test("should close non Closable with close") {
+
+    trait NotClosableWithClose {
+      def close()
+    }
+
+    var mockNotClosable = mock[NotClosableWithClose]
+
+    import Closable._
+    using(mockNotClosable) { closable =>  }
+
+    verify(mockNotClosable).close()
   }
 }
