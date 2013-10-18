@@ -12,11 +12,10 @@ class TestResource extends FunSuite with ShouldMatchers {
     import TestResource._
     val wXml = Await.result(ResourceExample.root.get(), 10.seconds)
     (wXml.elem \ "head" \ "title").text should include(testString)
-
   }
 }
 
-object TestResource {
+object TestResource extends AsyncClientTest  {
 
   object ResourceExample extends ResourceModule[Nothing, WrappedXml, UntypedWrappedXml] {
     protected def client: AsyncClient = new AsyncClient(testConfig)
@@ -25,13 +24,7 @@ object TestResource {
 
     implicit protected def responseHandler = new ResponseHandler[WrappedXml] {
       def to(response: Response) = {
-        WrappedXml(xml.XML.withSAXParser(factory.newSAXParser).loadString(response.getResponseBody))
-      }
-
-      private lazy val factory = {
-        val spf = new org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl()
-        spf.setNamespaceAware(true)
-        spf
+        WrappedXml(xml.XML.withSAXParser(saxParserFactory.newSAXParser).loadString(response.getResponseBody))
       }
     }
 
