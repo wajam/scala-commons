@@ -8,7 +8,6 @@ import java.io.{ OutputStreamWriter, ByteArrayOutputStream }
 import org.json4s.{Extraction, Formats}
 import org.json4s.native.JsonMethods._
 import scala.util.Try
-import com.wajam.asyncclient._
 
 trait JsonOperations {
 
