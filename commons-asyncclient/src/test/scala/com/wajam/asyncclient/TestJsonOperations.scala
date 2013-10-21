@@ -2,11 +2,12 @@ package com.wajam.asyncclient
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
-import net.liftweb.json.{Serialization, DefaultFormats}
-import net.liftweb.json.JsonAST._
+import org.json4s.JsonAST._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalacheck.Arbitrary
 import com.ning.http.client.Response
+import org.json4s.DefaultFormats
+import org.json4s.native.Serialization
 
 class TestJsonOperations extends FunSuite
 with ShouldMatchers with GeneratorDrivenPropertyChecks with JsonOperations {
@@ -71,7 +72,7 @@ object TestJsonOperations {
 
   def genArray: Gen[JValue] = genList map JArray
 
-  def genObject: Gen[JObject] = genFieldList map JObject
+  def genObject: Gen[JObject] = genFieldList map {x => JObject(x)}
 
   def genList = Gen.containerOfN[List, JValue](listSize, genJValue)
 
