@@ -7,22 +7,16 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import com.wajam.asyncclient.AsyncClient._
 
-class TestAsyncClient extends FunSuite with ShouldMatchers {
+class TestAsyncClient extends FunSuite with ShouldMatchers with AsyncClientTest {
 
   test("should be able to get content from a website") {
     implicit object HtmlResponse extends ResponseHandler[xml.Elem] {
       // See https://github.com/dispatch/reboot/blob/master/core/src/main/scala/as/xml/elem.scala
       //Also, there is a bug with the doctype
-      def to(response: Response) = xml.XML.withSAXParser(factory.newSAXParser).loadString(response.getResponseBody.dropWhile(_ != '\n'))
-
-      private lazy val factory = {
-        val spf = new org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl()
-        spf.setNamespaceAware(true)
-        spf
-      }
+      def to(response: Response) = xml.XML.withSAXParser(saxParserFactory.newSAXParser).loadString(response.getResponseBody)
     }
-    val client = new AsyncClient(HttpClientConfig())
-    extractTitle(Await.result(client.get(url("http://www.wajam.com")), 10.seconds)) should include("Wajam")
+    val client = new AsyncClient(testConfig)
+    extractTitle(Await.result(client.get(url(testUrl)), 10.seconds)) should include(testString)
   }
 
   private def extractTitle(x: xml.Elem): String = (x \ "head" \ "title").text
