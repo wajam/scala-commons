@@ -37,7 +37,7 @@ object CommonsBuild extends Build {
     "net.databinder.dispatch" %% "dispatch-core" % "0.11.0" exclude("io.netty", "netty"),
     "net.databinder.dispatch" %% "dispatch-lift-json" % "0.11.0" exclude("io.netty", "netty"),
     "io.netty" % "netty" % "3.5.0.Final",
-    "net.liftweb" %% "lift-json" % "2.5.1",
+    "org.json4s" %% "json4s-native" % "3.2.5",
     "org.ccil.cowan.tagsoup" % "tagsoup" % "1.2" % "it"
   )
 

@@ -1,11 +1,12 @@
 package com.wajam.asyncclient
 
-import net.liftweb.json.JsonAST.JValue
-import net.liftweb.json.Serialization.write
+import org.json4s.JsonAST.JValue
+import org.json4s.native.Serialization.write
 import com.ning.http.client.Response
 import dispatch.as
-import java.io.{OutputStreamWriter, ByteArrayOutputStream}
-import net.liftweb.json.{JsonParser, Formats}
+import java.io.{ OutputStreamWriter, ByteArrayOutputStream }
+import org.json4s.{Extraction, Formats}
+import org.json4s.native.JsonMethods._
 import scala.util.Try
 
 trait JsonOperations {
@@ -29,14 +30,14 @@ trait JsonOperations {
 
   implicit object JsonDecomposer extends Decomposer[JValue] {
     def decompose[Value](value: Value): JValue = {
-      net.liftweb.json.Extraction.decompose(value)
+      Extraction.decompose(value)
     }
   }
 
 }
 
 case class JsonResponse(code: Int, str: String)(implicit formats: Formats) extends ConvertableResponse[TypedJsonResponse] {
-  val json: Option[JValue] = Try(JsonParser.parse(str)).toOption
+  val json: Option[JValue] = Try(parse(str)).toOption
 
   def as[A](implicit mf: Manifest[A]) = TypedJsonResponse[A](code, str, json)
 }
