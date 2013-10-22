@@ -5,17 +5,14 @@ package com.wajam.commons
  */
 object Batching {
 
-  def splitBatch[I](toProcess: Seq[I], maxBatchSize: Int): Iterator[Seq[I]] = {
-    val batchQty = math.ceil(toProcess.size.toDouble / maxBatchSize)
-    val actualBatchSize = math.min(math.ceil(toProcess.size.toDouble / batchQty), maxBatchSize).toInt
-
-    if (actualBatchSize == 0) Iterator.empty
-    else toProcess.grouped(actualBatchSize)
+  def splitBatch[I](toProcess: Seq[I], batchSize: Int): Iterator[Seq[I]] = {
+    if (toProcess.isEmpty) Iterator.empty
+    else toProcess.grouped(batchSize)
   }
 
-  def batchCall[I, O](toProcess: Seq[I], maxBatchSize: Int)
+  def batchCall[I, O](toProcess: Seq[I], batchSize: Int)
                      (batchCall: Seq[I] => O): Iterator[O] = {
-    splitBatch(toProcess, maxBatchSize) map batchCall
+    splitBatch(toProcess, batchSize) map batchCall
   }
 
 }

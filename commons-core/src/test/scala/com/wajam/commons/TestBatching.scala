@@ -28,15 +28,14 @@ class TestBatching extends FlatSpec with ShouldMatchers {
     result should be(Seq(Seq(1, 2), Seq(3, 4)))
   }
 
-  it should "use an optimal batch size" in {
+  it should "allow for partial batches" in {
     val list = Seq(1, 2, 3, 4, 5, 6)
 
     val result = splitBatch(list, 4).toList
     list should be(result.flatten)
     result should not be ('empty)
     result should have size (2)
-    result.foreach(_ should have size (3))
-    result should be(Seq(Seq(1, 2, 3), Seq(4, 5, 6)))
+    result should be(Seq(Seq(1, 2, 3, 4), Seq(5, 6)))
   }
 
   "batchCall function" should "never call batched function on empty sequence" in {
@@ -73,18 +72,4 @@ class TestBatching extends FlatSpec with ShouldMatchers {
     result should have size (2)
   }
 
-  it should "use an optimal batch size" in {
-    val list = Seq(1, 2, 3, 4, 5, 6)
-
-    def batch(seqI: Seq[Int]): Seq[String] = {
-      seqI should have size (3)
-      seqI.foreach(i => list should contain(i))
-      seqI.map(_.toString)
-    }
-
-    val result = batchCall(list, 4)(batch).toList
-    list.map(_.toString) should be(result.flatten)
-    result should not be ('empty)
-    result should have size (2)
-  }
 }
