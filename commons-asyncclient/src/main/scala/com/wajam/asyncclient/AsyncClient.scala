@@ -63,7 +63,6 @@ sealed trait Request {
 
 class AsyncClient(config: BaseHttpClientConfig) extends BaseAsyncClient {
 
-  // Create a thread-pool of bounded size (given by the configuration) with expiration of idle threads after 60 sec.
   private implicit val ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(config.threadPoolSize))
 
   private val httpClient = Http.configure(_.
