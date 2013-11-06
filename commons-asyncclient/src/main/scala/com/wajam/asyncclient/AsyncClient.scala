@@ -5,7 +5,6 @@ import dispatch._
 import com.ning.http.client
 import java.util.concurrent.{ ThreadPoolExecutor, TimeUnit, SynchronousQueue, ExecutionException }
 import scala.language.implicitConversions
-import dispatch.Req
 
 trait BaseAsyncClient {
 
