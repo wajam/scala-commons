@@ -3,7 +3,7 @@ package com.wajam.asyncclient
 import scala.concurrent.{ExecutionContext, Future}
 import dispatch._
 import com.ning.http.client
-import java.util.concurrent.Executors
+import java.util.concurrent.{ExecutionException, Executors}
 import scala.language.implicitConversions
 
 trait BaseAsyncClient {
@@ -79,24 +79,37 @@ class AsyncClient(config: BaseHttpClientConfig) extends BaseAsyncClient {
 
   def get[Response](request: Request)
                    (implicit handler: ResponseHandler[Response]): Future[Response] = {
-    httpClient(request.inner > (v => handler.to(v)))
+    httpClient(request.inner > (v => handler.to(v))).
+      recover(transformException("GET", request))
   }
 
   def post[RequestBody, Response](request: Request, value: RequestBody)
                                  (implicit requestHandler: RequestHandler[RequestBody],
                                   responseHandler: ResponseHandler[Response]): Future[Response] = {
-    httpClient(setBody(request.inner.POST, value, requestHandler) > (v => responseHandler.to(v)))
+    httpClient(setBody(request.inner.POST, value, requestHandler) > (v => responseHandler.to(v))).
+      recover(transformException("POST", request))
   }
 
   def put[RequestBody, Response](request: Request, value: RequestBody)
                                 (implicit requestHandler: RequestHandler[RequestBody],
                                  responseHandler: ResponseHandler[Response]): Future[Response] = {
-    httpClient(setBody(request.inner.PUT, value, requestHandler) > (v => responseHandler.to(v)))
+    httpClient(setBody(request.inner.PUT, value, requestHandler) > (v => responseHandler.to(v))).
+      recover(transformException("PUT", request))
   }
 
   def delete[Response](request: Request)
                       (implicit handler: ResponseHandler[Response]): Future[Response] = {
-    httpClient(request.inner.DELETE > (v => handler.to(v)))
+    httpClient(request.inner.DELETE > (v => handler.to(v))).
+      recover(transformException("DELETE", request))
+  }
+
+  //Reformat ExecutionException to add the context of the HTTP call in the Exception message.
+  private def transformException(method: String, request: Request): PartialFunction[Throwable, Nothing] = {
+    case e: ExecutionException => {
+      val baseMessage = s"Exception while executing $method $request."
+      val message = if (e.getMessage.isEmpty) baseMessage else s"$baseMessage Original message: ${e.getMessage}."
+      throw new ExecutionException(message, e.getCause)
+    }
   }
 }
 
