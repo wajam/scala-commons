@@ -3,7 +3,7 @@ package com.wajam.asyncclient
 import scala.concurrent.{ExecutionContext, Future}
 import dispatch._
 import com.ning.http.client
-import java.util.concurrent.{ExecutionException, Executors}
+import java.util.concurrent.{ ThreadPoolExecutor, TimeUnit, SynchronousQueue, ExecutionException }
 import scala.language.implicitConversions
 
 trait BaseAsyncClient {
@@ -62,7 +62,9 @@ sealed trait Request {
 
 class AsyncClient(config: BaseHttpClientConfig) extends BaseAsyncClient {
 
-  private implicit val ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(config.threadPoolSize))
+  // Create a thread-pool of bounded size (given by the configuration) with expiration of idle threads after 60 sec.
+  private implicit val ec = ExecutionContext.fromExecutorService(
+    new ThreadPoolExecutor(0, config.threadPoolSize, 60L, TimeUnit.SECONDS, new SynchronousQueue[Runnable]()))
 
   private val httpClient = Http.configure(_.
     setAllowPoolingConnection(config.allowPoolingConnection).
