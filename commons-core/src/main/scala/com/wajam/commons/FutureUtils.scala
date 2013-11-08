@@ -2,7 +2,6 @@ package com.wajam.commons
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.collection.mutable.ArrayBuffer
-import scala.languageFeature.postfixOps
 
 /**
  * Util functions for Future manipulation when processing a sequence of items asynchronously.
@@ -21,9 +20,10 @@ object FutureUtils {
 
   def serialWithTransform[A, B, C](elements: Seq[A], asyncProcessing: A => Future[B], transform: Future[B] => Future[C])
                                   (implicit ec: ExecutionContext): Future[Seq[C]] = {
-    elements.foldLeft(Future.successful(ArrayBuffer()): Future[ArrayBuffer[C]]) {
-      (acc, e) =>
-        acc.flatMap(prevResult => transform(asyncProcessing(e)).map(prevResult +=))
+    import scala.languageFeature.postfixOps
+    elements.foldLeft(Future.successful(new ArrayBuffer(elements.size)): Future[ArrayBuffer[C]]) {
+      (previousFuture, e) =>
+        previousFuture.flatMap(prevResult => transform(asyncProcessing(e)).map(prevResult +=))
     }.map(_.toSeq)
   }
 
