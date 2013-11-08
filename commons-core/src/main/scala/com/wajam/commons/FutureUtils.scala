@@ -15,8 +15,8 @@ object FutureUtils {
    *
    * The first failure will fail the returned Future.
    */
-  def serialize[A, B](elements: Iterable[A], asyncProcessing: A => Future[B])
-                     (implicit ec: ExecutionContext): Future[Iterable[B]] = {
+  def serialize[A, B](elements: Seq[A], asyncProcessing: A => Future[B])
+                     (implicit ec: ExecutionContext): Future[Seq[B]] = {
     serialWithTransform(elements, asyncProcessing, identity[Future[B]])
   }
 
@@ -27,13 +27,13 @@ object FutureUtils {
    * Any success or failure is wrapped in a Try object. The returned Future will contain one Try object per
    * element in the Iterable.
    */
-  def serializeWithRecovery[A, B](elements: Iterable[A], asyncProcessing: A => Future[B])
-                                 (implicit ec: ExecutionContext): Future[Iterable[Try[B]]] = {
+  def serializeWithRecovery[A, B](elements: Seq[A], asyncProcessing: A => Future[B])
+                                 (implicit ec: ExecutionContext): Future[Seq[Try[B]]] = {
     serialWithTransform(elements, asyncProcessing, toFutureOfTry[B])
   }
 
-  def serialWithTransform[A, B, C](elements: Iterable[A], asyncProcessing: A => Future[B], transform: Future[B] => Future[C])
-                                  (implicit ec: ExecutionContext): Future[Iterable[C]] = {
+  def serialWithTransform[A, B, C](elements: Seq[A], asyncProcessing: A => Future[B], transform: Future[B] => Future[C])
+                                  (implicit ec: ExecutionContext): Future[Seq[C]] = {
     import scala.languageFeature.postfixOps
     elements.foldLeft(Future.successful(new ArrayBuffer[C](elements.size))) {
       (previousFuture, e) =>
@@ -47,8 +47,8 @@ object FutureUtils {
    *
    * The first failure will fail the returned Future.
    */
-  def parallel[A, B](elements: Iterable[A], asyncProcessing: A => Future[B])
-                    (implicit ec: ExecutionContext): Future[Iterable[B]] = {
+  def parallel[A, B](elements: Seq[A], asyncProcessing: A => Future[B])
+                    (implicit ec: ExecutionContext): Future[Seq[B]] = {
     parallelWithTransform(elements, asyncProcessing, identity[Future[B]])
   }
 
@@ -59,13 +59,13 @@ object FutureUtils {
    * Any success or failure is wrapped in a Try object. The returned Future will contain one Try object per
    * element in the Iterable.
    */
-  def parallelWithRecovery[A, B](elements: Iterable[A], asyncProcessing: A => Future[B])
-                                (implicit ec: ExecutionContext): Future[Iterable[Try[B]]] = {
+  def parallelWithRecovery[A, B](elements: Seq[A], asyncProcessing: A => Future[B])
+                                (implicit ec: ExecutionContext): Future[Seq[Try[B]]] = {
     parallelWithTransform(elements, asyncProcessing, toFutureOfTry[B])
   }
 
-  def parallelWithTransform[A, B, C](elements: Iterable[A], asyncProcessing: A => Future[B], transform: Future[B] => Future[C])
-                                    (implicit ec: ExecutionContext): Future[Iterable[C]] = {
+  def parallelWithTransform[A, B, C](elements: Seq[A], asyncProcessing: A => Future[B], transform: Future[B] => Future[C])
+                                    (implicit ec: ExecutionContext): Future[Seq[C]] = {
     Future.sequence {
       for {
         e <- elements

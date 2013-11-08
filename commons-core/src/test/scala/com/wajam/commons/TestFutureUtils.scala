@@ -43,7 +43,7 @@ class TestFutureUtils extends FlatSpec with ShouldMatchers {
   it should behave like common(FutureUtils.parallel[Int, Int])
   it should behave like commonWithRecovery(FutureUtils.parallelWithRecovery[Int, Int])
 
-  private def common(f: (Iterable[Int], Int => Future[Int]) => Future[Iterable[Int]]) {
+  private def common(f: (Seq[Int], Int => Future[Int]) => Future[Iterable[Int]]) {
 
     it should "fail at first failure" in new Setup {
       val future = f(elements, delayedFuture(recorder, Some(numberToFailOn)))
@@ -60,7 +60,7 @@ class TestFutureUtils extends FlatSpec with ShouldMatchers {
     }
   }
 
-  private def commonWithRecovery(f: (Iterable[Int], Int => Future[Int]) => Future[Iterable[Try[Int]]]) {
+  private def commonWithRecovery(f: (Seq[Int], Int => Future[Int]) => Future[Iterable[Try[Int]]]) {
 
     it should "process all elements even if one fail" in new Setup {
       val future = f(elements, delayedFuture(recorder, Some(numberToFailOn)))
