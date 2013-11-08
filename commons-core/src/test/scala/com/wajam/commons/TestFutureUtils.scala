@@ -5,6 +5,7 @@ import scala.concurrent.{ExecutionContext, Await, Future}
 import scala.concurrent.duration.Duration
 import org.scalatest.matchers.ShouldMatchers
 import java.util.concurrent.{Executors, ConcurrentLinkedQueue}
+import scala.util.{Failure, Success, Try}
 
 class TestFutureUtils extends FlatSpec with ShouldMatchers {
   val numberToFailOn = 500
@@ -42,7 +43,7 @@ class TestFutureUtils extends FlatSpec with ShouldMatchers {
   it should behave like common(FutureUtils.parallel[Int, Int])
   it should behave like commonWithRecovery(FutureUtils.parallelWithRecovery[Int, Int])
 
-  private def common(f: (Seq[Int], Int => Future[Int]) => Future[Seq[Int]]) {
+  private def common(f: (Iterable[Int], Int => Future[Int]) => Future[Iterable[Int]]) {
 
     it should "fail at first failure" in new Setup {
       val future = f(elements, delayedFuture(recorder, Some(numberToFailOn)))
@@ -59,13 +60,13 @@ class TestFutureUtils extends FlatSpec with ShouldMatchers {
     }
   }
 
-  private def commonWithRecovery(f: (Seq[Int], Int => Future[Int]) => Future[Seq[Either[Throwable, Int]]]) {
+  private def commonWithRecovery(f: (Iterable[Int], Int => Future[Int]) => Future[Iterable[Try[Int]]]) {
 
     it should "process all elements even if one fail" in new Setup {
       val future = f(elements, delayedFuture(recorder, Some(numberToFailOn)))
 
       val result = Await.result(future, Duration.Inf)
-      result should equal(List(Right(100), Right(200), Left(exception), Right(1)))
+      result should equal(List(Success(100), Success(200), Failure(exception), Success(1)))
     }
   }
 

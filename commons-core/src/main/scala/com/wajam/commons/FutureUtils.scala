@@ -2,43 +2,70 @@ package com.wajam.commons
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.collection.mutable.ArrayBuffer
+import scala.util.{Failure, Success, Try}
 
 /**
  * Util functions for Future manipulation when processing a sequence of items asynchronously.
  */
 object FutureUtils {
 
-  def serialize[A, B](elements: Seq[A], asyncProcessing: A => Future[B])
-                     (implicit ec: ExecutionContext): Future[Seq[B]] = {
+  /**
+   * Apply an asynchronous processing to each element of an Iterable. Elements are process in sequence but in a
+   * non-blocking way.
+   *
+   * The first failure will fail the returned Future.
+   */
+  def serialize[A, B](elements: Iterable[A], asyncProcessing: A => Future[B])
+                     (implicit ec: ExecutionContext): Future[Iterable[B]] = {
     serialWithTransform(elements, asyncProcessing, identity[Future[B]])
   }
 
-  def serializeWithRecovery[A, B](elements: Seq[A], asyncProcessing: A => Future[B])
-                                 (implicit ec: ExecutionContext): Future[Seq[Either[Throwable, B]]] = {
-    serialWithTransform(elements, asyncProcessing, toFutureOfEither[B])
+  /**
+   * Apply an asynchronous processing to each element of an Iterable. Elements are process in sequence but in a
+   * non-blocking way.
+   *
+   * Any success or failure is wrapped in a Try object. The returned Future will contain one Try object per
+   * element in the Iterable.
+   */
+  def serializeWithRecovery[A, B](elements: Iterable[A], asyncProcessing: A => Future[B])
+                                 (implicit ec: ExecutionContext): Future[Iterable[Try[B]]] = {
+    serialWithTransform(elements, asyncProcessing, toFutureOfTry[B])
   }
 
-  def serialWithTransform[A, B, C](elements: Seq[A], asyncProcessing: A => Future[B], transform: Future[B] => Future[C])
-                                  (implicit ec: ExecutionContext): Future[Seq[C]] = {
+  def serialWithTransform[A, B, C](elements: Iterable[A], asyncProcessing: A => Future[B], transform: Future[B] => Future[C])
+                                  (implicit ec: ExecutionContext): Future[Iterable[C]] = {
     import scala.languageFeature.postfixOps
-    elements.foldLeft(Future.successful(new ArrayBuffer(elements.size)): Future[ArrayBuffer[C]]) {
+    elements.foldLeft(Future.successful(new ArrayBuffer[C](elements.size))) {
       (previousFuture, e) =>
         previousFuture.flatMap(prevResult => transform(asyncProcessing(e)).map(prevResult +=))
     }.map(_.toSeq)
   }
 
-  def parallel[A, B](elements: Seq[A], asyncProcessing: A => Future[B])
-                    (implicit ec: ExecutionContext): Future[Seq[B]] = {
+  /**
+   * Apply an asynchronous processing to each element of an Iterable. Elements are process in parallel in a
+   * non-blocking way.
+   *
+   * The first failure will fail the returned Future.
+   */
+  def parallel[A, B](elements: Iterable[A], asyncProcessing: A => Future[B])
+                    (implicit ec: ExecutionContext): Future[Iterable[B]] = {
     parallelWithTransform(elements, asyncProcessing, identity[Future[B]])
   }
 
-  def parallelWithRecovery[A, B](elements: Seq[A], asyncProcessing: A => Future[B])
-                                (implicit ec: ExecutionContext): Future[Seq[Either[Throwable, B]]] = {
-    parallelWithTransform(elements, asyncProcessing, toFutureOfEither[B])
+  /**
+   * Apply an asynchronous processing to each element of an Iterable. Elements are process in parallel in a
+   * non-blocking way.
+   *
+   * Any success or failure is wrapped in a Try object. The returned Future will contain one Try object per
+   * element in the Iterable.
+   */
+  def parallelWithRecovery[A, B](elements: Iterable[A], asyncProcessing: A => Future[B])
+                                (implicit ec: ExecutionContext): Future[Iterable[Try[B]]] = {
+    parallelWithTransform(elements, asyncProcessing, toFutureOfTry[B])
   }
 
-  def parallelWithTransform[A, B, C](elements: Seq[A], asyncProcessing: A => Future[B], transform: Future[B] => Future[C])
-                                 (implicit ec: ExecutionContext): Future[Seq[C]] = {
+  def parallelWithTransform[A, B, C](elements: Iterable[A], asyncProcessing: A => Future[B], transform: Future[B] => Future[C])
+                                    (implicit ec: ExecutionContext): Future[Iterable[C]] = {
     Future.sequence {
       for {
         e <- elements
@@ -46,10 +73,10 @@ object FutureUtils {
     }
   }
 
-  private def toFutureOfEither[B](future: Future[B])
-                                 (implicit ec: ExecutionContext): Future[Either[Throwable, B]] = {
-    future.map(s => Right(s)).recover {
-      case x => Left(x)
+  private def toFutureOfTry[B](future: Future[B])
+                              (implicit ec: ExecutionContext): Future[Try[B]] = {
+    future.map(s => Success(s)).recover {
+      case x => Failure(x)
     }
   }
 }
