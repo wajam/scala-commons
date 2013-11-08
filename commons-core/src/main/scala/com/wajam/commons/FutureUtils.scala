@@ -5,7 +5,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.languageFeature.postfixOps
 
 /**
- * Util functions for Future manipulation
+ * Util functions for Future manipulation when processing a sequence of items asynchronously.
  */
 object FutureUtils {
 
