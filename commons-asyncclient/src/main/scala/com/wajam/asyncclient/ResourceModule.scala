@@ -20,10 +20,11 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
 
   private def timeAction[T](timer: Timer)(action: => Future[T]): Future[T] = {
     val context = timer.timerContext()
-    action onComplete {
+    val actionFuture = action
+    actionFuture onComplete {
       case _ => context.stop()
     }
-    action
+    actionFuture
   }
 
   trait Resource {
