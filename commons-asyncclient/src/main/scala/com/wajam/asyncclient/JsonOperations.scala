@@ -10,16 +10,18 @@ import org.json4s.native.JsonMethods._
 import scala.util.Try
 
 trait JsonOperations {
+  jsonOperations =>
 
   protected def charset: String
   implicit protected def formats: Formats
 
   implicit object JsonRequestHandler extends RequestHandler[JValue] {
     val contentType = "application/json"
+    val charset = Some(jsonOperations.charset)
 
     def from(value: JValue): Array[Byte] = {
       val baos = new ByteArrayOutputStream()
-      write(value, new OutputStreamWriter(baos, charset)).close()
+      write(value, new OutputStreamWriter(baos, jsonOperations.charset)).close()
       baos.toByteArray
     }
   }
