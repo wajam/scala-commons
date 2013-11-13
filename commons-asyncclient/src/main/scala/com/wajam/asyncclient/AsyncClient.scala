@@ -75,7 +75,15 @@ class AsyncClient(config: BaseHttpClientConfig) extends BaseAsyncClient {
 
   private def setBody[RequestBody](req: Req, value: RequestBody,
                                    handler: RequestHandler[RequestBody]): Req = {
-    req.setHeader("content-type", handler.contentType).setBody(handler.from(value))
+    req.setHeader("content-type", buildContentTypeHeaderValue(handler)).
+      setBody(handler.from(value))
+  }
+
+  private def buildContentTypeHeaderValue[RequestBody](handler: RequestHandler[RequestBody]) = {
+    handler.charset match {
+      case Some(charset) => s"${handler.contentType}; charset=$charset"
+      case None => handler.contentType
+    }
   }
 
   def get[Response](request: Request)
@@ -137,6 +145,8 @@ object AsyncClient {
 
 trait RequestHandler[RequestBody] {
   def contentType: String
+
+  def charset: Option[String]
 
   def from(value: RequestBody): Array[Byte]
 }
