@@ -6,6 +6,7 @@ import com.ning.http.client
 
 import scala.language.implicitConversions
 import java.util.concurrent.{ExecutionException, Executors}
+import com.twitter.concurrent.NamedPoolThreadFactory
 
 trait BaseAsyncClient {
 
@@ -61,9 +62,12 @@ sealed trait Request {
   def params(paramList: Map[String, String]): Request
 }
 
-class AsyncClient(config: BaseHttpClientConfig) extends BaseAsyncClient {
+class AsyncClient(config: BaseHttpClientConfig, name: String) extends BaseAsyncClient {
 
-  private implicit val ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(config.threadPoolSize))
+  def this(config: BaseHttpClientConfig) = this(config, "async-client")
+
+  private implicit val ec = ExecutionContext.fromExecutorService(
+    Executors.newFixedThreadPool(config.threadPoolSize, new NamedPoolThreadFactory(name)))
 
   private val httpClient = Http.configure(_.
     setAllowPoolingConnection(config.allowPoolingConnection).
