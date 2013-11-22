@@ -3,7 +3,6 @@ package com.wajam.asyncclient
 import scala.concurrent.{ExecutionContext, Future}
 import dispatch._
 import com.ning.http.client
-
 import scala.language.implicitConversions
 import java.util.concurrent.{ExecutionException, Executors}
 import com.twitter.concurrent.NamedPoolThreadFactory
@@ -74,7 +73,8 @@ class AsyncClient(config: BaseHttpClientConfig, name: String) extends BaseAsyncC
     setConnectionTimeoutInMs(config.connectionTimeoutInMs).
     setRequestTimeoutInMs(config.requestTimeoutInMs).
     setMaximumConnectionsPerHost(config.maximumConnectionsPerHost).
-    setMaximumConnectionsTotal(config.maximumConnectionsTotal)
+    setMaximumConnectionsTotal(config.maximumConnectionsTotal).
+    setCompressionEnabled(config.compressionEnabled)
   )
 
   private def setBody[RequestBody](req: Req, value: RequestBody,

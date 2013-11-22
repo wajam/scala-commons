@@ -7,6 +7,7 @@ trait BaseHttpClientConfig {
   def maximumConnectionsPerHost: Int
   def maximumConnectionsTotal: Int
   def threadPoolSize: Int
+  def compressionEnabled: Boolean
 }
 
 object BaseHttpClientConfig {
@@ -18,4 +19,5 @@ case class HttpClientConfig(allowPoolingConnection: Boolean = false,
                             requestTimeoutInMs: Int = 1000,
                             maximumConnectionsPerHost: Int = BaseHttpClientConfig.unlimited,
                             maximumConnectionsTotal: Int = BaseHttpClientConfig.unlimited,
-                            threadPoolSize: Int = 1) extends BaseHttpClientConfig
+                            threadPoolSize: Int = 1,
+                            compressionEnabled: Boolean = false) extends BaseHttpClientConfig
