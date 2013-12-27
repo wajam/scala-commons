@@ -9,10 +9,10 @@ import org.gearman.core.GearmanConstants
 import org.gearman.{GearmanClient => JavaGearmanClient, GearmanBackgroundJob, GearmanJobResult, GearmanJob, Gearman}
 import org.gearman.GearmanClient.{SubmitCallbackResult, GearmanSubmitHandler}
 import org.gearman.GearmanJob.Priority
-import java.io.{OutputStreamWriter, ByteArrayOutputStream}
 import com.wajam.gearman.exception.{JobExecutionException, JobSubmissionException}
 import scala.util.{Failure, Success}
 import com.wajam.gearman.WajamGearmanClient
+import com.wajam.gearman.utils.GearmanJSON
 
 
 class AsyncWajamGearmanClient(serverAddress: Seq[String])(implicit val ec: ExecutionContext) extends WajamGearmanClient with Logging with Instrumented {
@@ -83,17 +83,17 @@ class AsyncWajamGearmanClient(serverAddress: Seq[String])(implicit val ec: Execu
       val job: GearmanJob = jobCompletedPromise match {
         //Create a gearman job with callback
         case Some(promise) =>
-          new GearmanJob(jobName, encodeAsJson(data), gearmanPriority) {
+          new GearmanJob(jobName, GearmanJSON.encodeAsJson(data), gearmanPriority) {
             protected def onComplete(result: GearmanJobResult) {
               if (jobCompletedTimerContext.isDefined) {
                 jobCompletedTimerContext.get.stop()
               }
 
               if (result.isSuccessful) {
-                promise.success(s"$jobName completed $data")
+                promise.success(data)
               } else {
                 error(s"Error processing the job $jobName ${result.getJobCallbackResult.toString}")
-                promise.failure(new JobExecutionException(data, s"Job couldn't be completed properly $jobName ${result.toString}"))
+                promise.failure(new JobExecutionException(data, s"Job couldn't be completed properly $jobName ${result.getJobCallbackResult().toString}"))
               }
             }
 
@@ -107,7 +107,7 @@ class AsyncWajamGearmanClient(serverAddress: Seq[String])(implicit val ec: Execu
             }
           }
         //Create a background gearman job (no callback)
-        case None => new GearmanBackgroundJob(jobName, encodeAsJson(data), gearmanPriority)
+        case None => new GearmanBackgroundJob(jobName, GearmanJSON.encodeAsJson(data), gearmanPriority)
       }
 
       try {
@@ -115,7 +115,7 @@ class AsyncWajamGearmanClient(serverAddress: Seq[String])(implicit val ec: Execu
       } catch {
         //UnresolvedAddressException
         case e: Exception =>
-          jobEnqueuedPromise.failure(e)
+          jobEnqueuedPromise.failure(new JobSubmissionException(data, s"Couldn't submit job $jobName ${e.getMessage}"))
           if (jobQueuedTimerContext.isDefined) {
             jobQueuedTimerContext.get.stop()
           }
@@ -127,44 +127,6 @@ class AsyncWajamGearmanClient(serverAddress: Seq[String])(implicit val ec: Execu
 
     jobEnqueuedPromise.future
   }
-
-  private def encodeAsJson(o: Any): Array[Byte] = {
-    import org.json4s.JsonAST._
-    import org.json4s.native.Serialization.write
-    implicit val formats = org.json4s.DefaultFormats
-
-    val contentEncoding = "utf-8"
-
-    def encodeJson(j: JValue): Array[Byte] = {
-      val baos = new ByteArrayOutputStream()
-      write(j, new OutputStreamWriter(baos, contentEncoding)).close()
-      baos.toByteArray
-    }
-
-    def toJValue(value: Any): JValue = {
-      value match {
-        case v: JValue => v
-        case s: String => JString(s)
-        case l: Long => JInt(l)
-        case bi: BigInt => JInt(bi)
-        case i: Int => JInt(i)
-        case d: Double => JDouble(d)
-        case b: Boolean => JBool(b)
-        case seq: Seq[_] => JArray(seq.map(toJValue(_: Any)).toList)
-        case map: Map[_, _] => JObject(map.map(e => JField(e._1.toString, toJValue(e._2))).toList)
-        case _ => throw new RuntimeException("Invalid type, can not render json for " + value.getClass)
-      }
-    }
-
-    o match {
-      case s: String => s.getBytes(contentEncoding)
-      case l: Seq[_] => encodeJson(toJValue(l))
-      case m: Map[_, _] => encodeJson(toJValue(m))
-      case v: JValue => encodeJson(v)
-      case _ => throw new RuntimeException("Invalid type, can not render json for " + o.getClass)
-    }
-  }
-
 
 }
 
