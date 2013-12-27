@@ -42,6 +42,12 @@ object CommonsBuild extends Build {
     "org.ccil.cowan.tagsoup" % "tagsoup" % "1.2" % "it"
   )
 
+  val gearmanDeps = Seq(
+    "org.json4s" %% "json4s-native" % "3.2.5",
+    "com.twitter" %% "util-core" % "6.1.0",
+    "org.gearman" % "java-gearman-service" % "0.3"
+  )
+
   def configureScalariform(pref: IFormattingPreferences): IFormattingPreferences = {
     pref.setPreference(AlignParameters, true)
       .setPreference(DoubleIndentClassDeclaration, true)
@@ -109,5 +115,13 @@ object CommonsBuild extends Build {
     .settings(parallelExecution in IntegrationTest := false)
     .dependsOn(core)
     .dependsOn(tracing)
+
+  lazy val gearman = Project("commons-gearman", file("commons-gearman"))
+    .configs(IntegrationTest)
+    .settings(defaultSettings: _*)
+    .settings(libraryDependencies ++= gearmanDeps)
+    .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Test"))))
+    .settings(parallelExecution in IntegrationTest := false)
+    .dependsOn(core)
 
 }
