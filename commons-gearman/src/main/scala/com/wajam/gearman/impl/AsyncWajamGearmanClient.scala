@@ -13,12 +13,15 @@ import com.wajam.gearman.exception.{JobExecutionException, JobSubmissionExceptio
 import scala.util.{Failure, Success}
 import com.wajam.gearman.WajamGearmanClient
 import com.wajam.gearman.utils.GearmanJSON
+import com.wajam.tracing.Traced
 
 
-class AsyncWajamGearmanClient(serverAddress: Seq[String])(implicit val ec: ExecutionContext) extends WajamGearmanClient with Logging with Instrumented {
+class AsyncWajamGearmanClient(serverAddress: Seq[String])(implicit val ec: ExecutionContext) extends WajamGearmanClient with Logging with Instrumented with Traced {
 
   private val jobQueuedTimer = metrics.timer("job-queued", "calls")
   private val jobCompletedTimer = metrics.timer("job-completed", "calls")
+
+  private val metricSubmitJob = tracedTimer("gearman-submit")
 
   private val gearmanService: Gearman = new Gearman()
 
@@ -111,7 +114,9 @@ class AsyncWajamGearmanClient(serverAddress: Seq[String])(implicit val ec: Execu
       }
 
       try {
-        gearmanClient.submitJob(job, handler)
+        metricSubmitJob.time {
+          gearmanClient.submitJob(job, handler)
+        }
       } catch {
         //UnresolvedAddressException
         case e: Exception =>

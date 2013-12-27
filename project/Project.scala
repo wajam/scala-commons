@@ -123,5 +123,6 @@ object CommonsBuild extends Build {
     .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Test"))))
     .settings(parallelExecution in IntegrationTest := false)
     .dependsOn(core)
+    .dependsOn(tracing)
 
 }
