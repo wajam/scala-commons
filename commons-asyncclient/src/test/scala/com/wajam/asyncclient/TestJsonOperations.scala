@@ -1,7 +1,7 @@
 package com.wajam.asyncclient
 
-import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.{Matchers, FunSuite}
+import org.scalatest.Matchers
 import org.json4s.JsonAST._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalacheck.Arbitrary
@@ -10,7 +10,7 @@ import org.json4s.DefaultFormats
 import org.json4s.native.Serialization
 
 class TestJsonOperations extends FunSuite
-with ShouldMatchers with GeneratorDrivenPropertyChecks with JsonOperations {
+with Matchers with GeneratorDrivenPropertyChecks with JsonOperations {
 
   protected def charset = "UTF-8"
 

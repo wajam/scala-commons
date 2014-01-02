@@ -19,7 +19,7 @@ object CommonsBuild extends Build {
     "org.slf4j" % "slf4j-api" % "1.6.4",
     "nl.grons" %% "metrics-scala" % "2.2.0" exclude("org.slf4j", "slf4j-api"),
     "junit" % "junit" % "4.10" % "test, it",
-    "org.scalatest" %% "scalatest" % "1.9.2" % "test, it",
+    "org.scalatest" %% "scalatest" % "2.0" % "test, it",
     "org.mockito" % "mockito-core" % "1.9.0" % "test",
     "org.scalacheck" %% "scalacheck" % "1.10.1" % "test"
   )

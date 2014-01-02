@@ -2,12 +2,11 @@ package com.wajam.asyncclient
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.{Matchers, FlatSpec}
 import org.json4s.{DefaultFormats, Formats}
 import org.json4s.JsonAST.{JObject, JBool, JField}
 
-class TestGzipped extends FlatSpec with ShouldMatchers with JsonOperations {
+class TestGzipped extends FlatSpec with Matchers with JsonOperations {
 
   "AsyncClient" should "handle gzipped responses" in {
     val c = new AsyncClient(HttpClientConfig(compressionEnabled = true))

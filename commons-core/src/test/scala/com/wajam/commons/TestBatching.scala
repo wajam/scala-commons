@@ -1,10 +1,10 @@
 package com.wajam.commons
 
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import org.scalatest.FlatSpec
 import com.wajam.commons.Batching._
 
-class TestBatching extends FlatSpec with ShouldMatchers {
+class TestBatching extends FlatSpec with Matchers {
 
   "splitBatch function" should "return empty on empty sequence" in {
     splitBatch(Nil, 100).toList should be('empty)

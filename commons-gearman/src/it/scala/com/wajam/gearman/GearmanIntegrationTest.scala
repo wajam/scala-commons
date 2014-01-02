@@ -1,11 +1,12 @@
 package com.wajam.gearman
 
-import org.scalatest.{BeforeAndAfterAll, FlatSpec}
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.{Matchers, BeforeAndAfterAll, FlatSpec}
 import org.gearman._
 import com.wajam.gearman.utils.GearmanJSON
+import org.junit.Ignore
 
-class GearmanIntegrationTest extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
+@Ignore
+class GearmanIntegrationTest extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   protected val TEST_FUNCTION_NAME = "wajam_gearman_it_test"
 
@@ -36,7 +37,7 @@ class GearmanIntegrationTest extends FlatSpec with ShouldMatchers with BeforeAnd
 
   override protected def beforeAll() {
     //Open the server port
-    this.gearmanServer.openPort
+    this.gearmanServer.openPort()
     //Register the function to the worker
     this.gearmanWorker.addFunction(TEST_FUNCTION_NAME, dummyJob)
     //Register the worker to the server
@@ -44,7 +45,8 @@ class GearmanIntegrationTest extends FlatSpec with ShouldMatchers with BeforeAnd
   }
 
   override protected def afterAll() {
-    gearmanWorker.unregisterAll()
+    this.gearmanWorker.unregisterAll()
+    this.gearmanServer.closeAllPorts()
   }
 
 }

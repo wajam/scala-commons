@@ -1,13 +1,12 @@
 package com.wajam.asyncclient
 
-import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.{FunSuite, Matchers}
 import com.ning.http.client.Response
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import com.wajam.asyncclient.AsyncClient._
 
-class TestAsyncClient extends FunSuite with ShouldMatchers with AsyncClientTest {
+class TestAsyncClient extends FunSuite with Matchers with AsyncClientTest {
 
   test("should be able to get content from a website") {
     implicit object HtmlResponse extends ResponseHandler[xml.Elem] {

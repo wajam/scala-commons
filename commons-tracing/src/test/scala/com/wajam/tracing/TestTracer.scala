@@ -1,7 +1,7 @@
 package com.wajam.tracing
 
 import org.scalatest.{BeforeAndAfter, FunSuite}
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 import com.wajam.tracing.Annotation.Message
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._

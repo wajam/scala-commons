@@ -3,11 +3,11 @@ package com.wajam.commons
 import org.scalatest.FlatSpec
 import scala.concurrent.{ExecutionContext, Await, Future}
 import scala.concurrent.duration.Duration
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import java.util.concurrent.{Executors, ConcurrentLinkedQueue}
 import scala.util.{Failure, Success, Try}
 
-class TestFutureUtils extends FlatSpec with ShouldMatchers {
+class TestFutureUtils extends FlatSpec with Matchers {
   val numberToFailOn = 500
   val exception = new RuntimeException("failed!")
   val elements = List(100, 200, 500, 1)

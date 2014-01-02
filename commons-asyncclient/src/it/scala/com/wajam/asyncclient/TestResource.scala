@@ -1,13 +1,12 @@
 package com.wajam.asyncclient
 
-import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.FunSuite
+import org.scalatest.{Matchers, FunSuite}
 import net.liftweb.json.Formats
 import com.ning.http.client.Response
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class TestResource extends FunSuite with ShouldMatchers {
+class TestResource extends FunSuite with Matchers {
   test("should be able to create a simple resource") {
     import TestResource._
     val wXml = Await.result(ResourceExample.root.get(), 10.seconds)

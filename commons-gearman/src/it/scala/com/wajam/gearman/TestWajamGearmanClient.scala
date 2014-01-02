@@ -1,7 +1,5 @@
 package com.wajam.gearman
 
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.matchers.ShouldMatchers
 import scala.concurrent.{Await, ExecutionContext}
 import java.util.concurrent.{TimeoutException, Executors}
 import com.wajam.gearman.impl.AsyncWajamGearmanClient
@@ -9,7 +7,7 @@ import scala.util.{Failure, Success}
 import com.wajam.gearman.exception.{JobSubmissionException, JobExecutionException}
 import scala.concurrent.duration._
 
-class TestWajamGearmanClient extends GearmanIntegrationTest with ShouldMatchers with BeforeAndAfterAll {
+class TestWajamGearmanClient extends GearmanIntegrationTest {
 
   implicit val ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(10))
 
