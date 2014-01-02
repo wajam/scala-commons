@@ -30,13 +30,9 @@ class TestWajamGearmanClient extends GearmanIntegrationTest with ShouldMatchers 
   "Working client" should "fail when executeJob fail data" in {
     val data = Map("fail" -> "fail")
     val f = client.executeJob(TEST_FUNCTION_NAME, data)
-    f.onComplete {
-      case Success(v) => fail("Fail data should return a failure")
-      case Failure(e) => evaluating {
-        throw e
-      } should produce[JobExecutionException]
-    }
-    Await.ready(f, 2.seconds)
+    evaluating {
+      Await.result(f, 2.seconds)
+    } should produce[JobExecutionException]
   }
 
   "Working client" should "not fail when enqueueJob success data" in {
@@ -63,23 +59,13 @@ class TestWajamGearmanClient extends GearmanIntegrationTest with ShouldMatchers 
     val data = Map("success" -> "success")
 
     val f1 = notWorkingClient.executeJob(TEST_FUNCTION_NAME, data)
-    f1.onComplete {
-      case Success(v) => fail("Success data should return a failure")
-      case Failure(e) => evaluating {
-        throw e
-      } should produce[JobSubmissionException]
-    }
-    Await.ready(f1, 2.seconds)
+    evaluating(Await.result(f1, 2.seconds)) should produce[JobSubmissionException]
 
     val f2 = notWorkingClient.executeJob(TEST_FUNCTION_NAME, data)
-    evaluating {
-      Await.ready(f2, 2.seconds)
-    } should produce[TimeoutException]
+    evaluating(Await.ready(f2, 2.seconds)) should produce[TimeoutException]
 
     val f3 = notWorkingClient.enqueueJob(TEST_FUNCTION_NAME, data)
-    evaluating {
-      Await.ready(f3, 2.seconds)
-    } should produce[TimeoutException]
+    evaluating(Await.ready(f3, 2.seconds)) should produce[TimeoutException]
   }
 
   override def beforeAll() = {
