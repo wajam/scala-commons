@@ -30,9 +30,7 @@ class TestWajamGearmanClient extends GearmanIntegrationTest with ShouldMatchers 
   "Working client" should "fail when executeJob fail data" in {
     val data = Map("fail" -> "fail")
     val f = client.executeJob(TEST_FUNCTION_NAME, data)
-    evaluating {
-      Await.result(f, 2.seconds)
-    } should produce[JobExecutionException]
+    evaluating(Await.result(f, 2.seconds)) should produce[JobExecutionException]
   }
 
   "Working client" should "not fail when enqueueJob success data" in {
