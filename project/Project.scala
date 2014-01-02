@@ -44,7 +44,6 @@ object CommonsBuild extends Build {
 
   val gearmanDeps = Seq(
     "org.json4s" %% "json4s-native" % "3.2.5",
-    "com.twitter" %% "util-core" % "6.1.0",
     "org.gearman" % "java-gearman-service" % "0.3"
   )
 
@@ -74,6 +73,7 @@ object CommonsBuild extends Build {
     .aggregate(mysql)
     .aggregate(caching)
     .aggregate(asyncclient)
+    .aggregate(gearman)
 
   lazy val core = Project("commons-core", file("commons-core"))
     .configs(IntegrationTest)

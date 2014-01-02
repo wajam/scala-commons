@@ -10,13 +10,13 @@ class GearmanIntegrationTest extends FlatSpec with ShouldMatchers with BeforeAnd
   protected val TEST_FUNCTION_NAME = "wajam_gearman_it_test"
 
   //Create the service
-  private val gearmanService: Gearman = new Gearman()
+  private val gearmanService = new Gearman()
   //Create the server
-  private val gearmanServer: GearmanServer = gearmanService.createGearmanServer
+  private val gearmanServer = gearmanService.createGearmanServer
   //Create a worker
-  private val gearmanWorker: GearmanWorker = gearmanService.createGearmanWorker
+  private val gearmanWorker = gearmanService.createGearmanWorker
   //Create a dummy job to register to worker
-  private val dummyJob: GearmanFunction = new GearmanFunction() {
+  private val dummyJob: GearmanFunction = new GearmanFunction {
 
     def work(job: GearmanJob): GearmanJobResult = {
       GearmanJSON.decodeFromJson(job.getJobData) match {
@@ -46,6 +46,5 @@ class GearmanIntegrationTest extends FlatSpec with ShouldMatchers with BeforeAnd
   override protected def afterAll() {
     gearmanWorker.unregisterAll()
   }
-
 
 }

@@ -68,10 +68,6 @@ class TestWajamGearmanClient extends GearmanIntegrationTest with ShouldMatchers 
     evaluating(Await.ready(f3, 2.seconds)) should produce[TimeoutException]
   }
 
-  override def beforeAll() = {
-    super.beforeAll()
-  }
-
   override def afterAll() = {
     client.shutdown()
     super.afterAll()
