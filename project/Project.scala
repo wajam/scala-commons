@@ -19,7 +19,7 @@ object CommonsBuild extends Build {
     "org.slf4j" % "slf4j-api" % "1.6.4",
     "nl.grons" %% "metrics-scala" % "2.2.0" exclude("org.slf4j", "slf4j-api"),
     "junit" % "junit" % "4.10" % "test, it",
-    "org.scalatest" %% "scalatest" % "1.9.2" % "test, it",
+    "org.scalatest" %% "scalatest" % "2.0" % "test, it",
     "org.mockito" % "mockito-core" % "1.9.0" % "test",
     "org.scalacheck" %% "scalacheck" % "1.10.1" % "test"
   )
@@ -40,6 +40,11 @@ object CommonsBuild extends Build {
     "org.json4s" %% "json4s-native" % "3.2.5",
     "com.twitter" %% "util-core" % "6.1.0",
     "org.ccil.cowan.tagsoup" % "tagsoup" % "1.2" % "it"
+  )
+
+  val gearmanDeps = Seq(
+    "org.json4s" %% "json4s-native" % "3.2.5",
+    "org.gearman" % "java-gearman-service" % "0.3"
   )
 
   def configureScalariform(pref: IFormattingPreferences): IFormattingPreferences = {
@@ -68,6 +73,7 @@ object CommonsBuild extends Build {
     .aggregate(mysql)
     .aggregate(caching)
     .aggregate(asyncclient)
+    .aggregate(gearman)
 
   lazy val core = Project("commons-core", file("commons-core"))
     .configs(IntegrationTest)
@@ -105,6 +111,15 @@ object CommonsBuild extends Build {
     .configs(IntegrationTest)
     .settings(defaultSettings: _*)
     .settings(libraryDependencies ++= asyncclientDeps)
+    .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Test"))))
+    .settings(parallelExecution in IntegrationTest := false)
+    .dependsOn(core)
+    .dependsOn(tracing)
+
+  lazy val gearman = Project("commons-gearman", file("commons-gearman"))
+    .configs(IntegrationTest)
+    .settings(defaultSettings: _*)
+    .settings(libraryDependencies ++= gearmanDeps)
     .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Test"))))
     .settings(parallelExecution in IntegrationTest := false)
     .dependsOn(core)

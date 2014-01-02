@@ -2,14 +2,13 @@ package com.wajam.commons
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.FunSuite
+import org.scalatest.{Matchers, FunSuite}
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import java.io.IOException
-import org.scalatest.matchers.ShouldMatchers
 
 @RunWith(classOf[JUnitRunner])
-class TestClosable extends FunSuite with MockitoSugar with ShouldMatchers {
+class TestClosable extends FunSuite with MockitoSugar with Matchers {
   test("should close after `using` complete normally") {
     val mockClosable = mock[Closable]
 

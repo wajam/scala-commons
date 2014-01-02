@@ -1,7 +1,7 @@
 package com.wajam.tracing
 
 import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 import java.util.{TimeZone, Calendar}
 import java.net.{InetAddress, InetSocketAddress}
 import org.junit.runner.RunWith
