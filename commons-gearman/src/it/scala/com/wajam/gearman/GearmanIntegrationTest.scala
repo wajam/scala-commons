@@ -2,11 +2,9 @@ package com.wajam.gearman
 
 import org.scalatest.{Matchers, BeforeAndAfterAll, FlatSpec}
 import org.gearman._
-import com.wajam.gearman.utils.GearmanJSON
-import org.junit.Ignore
+import com.wajam.gearman.utils.GearmanJson
 
-@Ignore
-class GearmanIntegrationTest extends FlatSpec with Matchers with BeforeAndAfterAll {
+abstract class GearmanIntegrationTest extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   protected val TEST_FUNCTION_NAME = "wajam_gearman_it_test"
 
@@ -20,7 +18,7 @@ class GearmanIntegrationTest extends FlatSpec with Matchers with BeforeAndAfterA
   private val dummyJob: GearmanFunction = new GearmanFunction {
 
     def work(job: GearmanJob): GearmanJobResult = {
-      GearmanJSON.decodeFromJson(job.getJobData) match {
+      GearmanJson.decodeFromJson(job.getJobData) match {
         case data if data.isInstanceOf[Map[_, Any]] =>
           val dataMap = data.asInstanceOf[Map[String, Any]]
           dataMap.get("success") match {

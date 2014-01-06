@@ -11,12 +11,12 @@ import org.gearman.GearmanClient.{SubmitCallbackResult, GearmanSubmitHandler}
 import org.gearman.GearmanJob.Priority
 import com.wajam.gearman.exception.{JobExecutionException, JobSubmissionException}
 import scala.util.{Failure, Success}
-import com.wajam.gearman.WajamGearmanClient
-import com.wajam.gearman.utils.GearmanJSON
+import com.wajam.gearman.GearmanClient
+import com.wajam.gearman.utils.GearmanJson
 import com.wajam.tracing.Traced
 
 
-class AsyncWajamGearmanClient(serverAddress: Seq[String])(implicit val ec: ExecutionContext) extends WajamGearmanClient with Logging with Instrumented with Traced {
+class AsyncGearmanClient(serverAddress: Seq[String])(implicit val ec: ExecutionContext) extends GearmanClient with Logging with Instrumented with Traced {
 
   private val jobQueuedTimer = metrics.timer("job-queued", "calls")
   private val jobCompletedTimer = metrics.timer("job-completed", "calls")
@@ -25,12 +25,12 @@ class AsyncWajamGearmanClient(serverAddress: Seq[String])(implicit val ec: Execu
 
   private val gearmanService: Gearman = new Gearman()
 
-  private val gearmanClient: JavaGearmanClient = gearmanService.createGearmanClient()
+  private val javaGearmanClient: JavaGearmanClient = gearmanService.createGearmanClient()
 
   //Initialize gearman client connection with all addresses
   serverAddress.foreach(server => {
     if (!server.isEmpty) {
-      gearmanClient.addServer(new InetSocketAddress(server, GearmanConstants.DEFAULT_PORT))
+      javaGearmanClient.addServer(new InetSocketAddress(server, GearmanConstants.DEFAULT_PORT))
     }
   })
 
@@ -61,7 +61,7 @@ class AsyncWajamGearmanClient(serverAddress: Seq[String])(implicit val ec: Execu
   private def sendJob(jobName: String, data: Map[String, Any], gearmanPriority: Priority, jobCompletedPromise: Option[Promise[Any]]): Future[Any] = {
     val jobEnqueuedPromise = Promise[Any]()
 
-    if (gearmanClient.getServerCount > 0) {
+    if (javaGearmanClient.getServerCount > 0) {
       val jobQueuedTimerContext: Option[TimerContext] = Some(jobQueuedTimer.timerContext())
       var jobCompletedTimerContext: Option[TimerContext] = None
 
@@ -88,7 +88,7 @@ class AsyncWajamGearmanClient(serverAddress: Seq[String])(implicit val ec: Execu
       val job: GearmanJob = jobCompletedPromise match {
         //Create a gearman job with callback
         case Some(promise) =>
-          new GearmanJob(jobName, GearmanJSON.encodeAsJson(data), gearmanPriority) {
+          new GearmanJob(jobName, GearmanJson.encodeAsJson(data), gearmanPriority) {
             protected def onComplete(result: GearmanJobResult) {
               jobCompletedTimerContext foreach {
                 _.stop()
@@ -112,12 +112,12 @@ class AsyncWajamGearmanClient(serverAddress: Seq[String])(implicit val ec: Execu
             }
           }
         //Create a background gearman job (no callback)
-        case None => new GearmanBackgroundJob(jobName, GearmanJSON.encodeAsJson(data), gearmanPriority)
+        case None => new GearmanBackgroundJob(jobName, GearmanJson.encodeAsJson(data), gearmanPriority)
       }
 
       try {
         metricSubmitJob.time {
-          gearmanClient.submitJob(job, handler)
+          javaGearmanClient.submitJob(job, handler)
         }
       } catch {
         //UnresolvedAddressException
