@@ -23,9 +23,9 @@ class AsyncGearmanClient(serverAddress: Seq[String])(implicit val ec: ExecutionC
 
   private val metricSubmitJob = tracedTimer("gearman-submit")
 
-  private val gearmanService: Gearman = new Gearman()
+  private val gearmanService = new Gearman()
 
-  private val javaGearmanClient: JavaGearmanClient = gearmanService.createGearmanClient()
+  private val javaGearmanClient = gearmanService.createGearmanClient()
 
   //Initialize gearman client connection with all addresses
   serverAddress.foreach(server => {
