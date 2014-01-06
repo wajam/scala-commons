@@ -2,7 +2,7 @@ package com.wajam.gearman
 
 import scala.concurrent.Future
 
-trait WajamGearmanClient {
+trait GearmanClient {
 
   def executeJob(jobName: String, data: Map[String, Any]): Future[Any]
 

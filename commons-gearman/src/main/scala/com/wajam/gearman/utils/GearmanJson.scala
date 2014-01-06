@@ -2,7 +2,7 @@ package com.wajam.gearman.utils
 
 import java.io.{InputStreamReader, ByteArrayInputStream, OutputStreamWriter, ByteArrayOutputStream}
 
-object GearmanJSON {
+object GearmanJson {
 
   def encodeAsJson(o: Any): Array[Byte] = {
     import org.json4s.JsonAST._

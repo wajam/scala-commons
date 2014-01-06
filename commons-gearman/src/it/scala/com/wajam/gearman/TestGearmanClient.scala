@@ -2,18 +2,18 @@ package com.wajam.gearman
 
 import scala.concurrent.{Await, ExecutionContext}
 import java.util.concurrent.{TimeoutException, Executors}
-import com.wajam.gearman.impl.AsyncWajamGearmanClient
+import com.wajam.gearman.impl.AsyncGearmanClient
 import scala.util.{Failure, Success}
 import com.wajam.gearman.exception.{JobSubmissionException, JobExecutionException}
 import scala.concurrent.duration._
 
-class TestWajamGearmanClient extends GearmanIntegrationTest {
+class TestGearmanClient extends GearmanIntegrationTest {
 
   implicit val ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(10))
 
-  val client: WajamGearmanClient = new AsyncWajamGearmanClient(Seq("127.0.0.1"))
+  val client: GearmanClient = new AsyncGearmanClient(Seq("127.0.0.1"))
 
-  val notWorkingClient: WajamGearmanClient = new AsyncWajamGearmanClient(Seq("nowhere.does.not.exist.nothing.none"))
+  val notWorkingClient: GearmanClient = new AsyncGearmanClient(Seq("nowhere.does.not.exist.nothing.none"))
 
   "Working client" should "not fail when executeJob success data" in {
     val data = Map("success" -> "success")
