@@ -6,7 +6,7 @@ import com.wajam.gearman.utils.GearmanJson
 
 abstract class GearmanIntegrationTest extends FlatSpec with Matchers with BeforeAndAfterAll {
 
-  protected val TEST_FUNCTION_NAME = "wajam_gearman_it_test"
+  protected val testFunctionName = "wajam_gearman_it_test"
 
   //Create the service
   private val gearmanService = new Gearman()
@@ -16,7 +16,6 @@ abstract class GearmanIntegrationTest extends FlatSpec with Matchers with Before
   private val gearmanWorker = gearmanService.createGearmanWorker
   //Create a dummy job to register to worker
   private val dummyJob: GearmanFunction = new GearmanFunction {
-
     def work(job: GearmanJob): GearmanJobResult = {
       GearmanJson.decodeFromJson(job.getJobData) match {
         case data if data.isInstanceOf[Map[_, Any]] =>
@@ -28,16 +27,13 @@ abstract class GearmanIntegrationTest extends FlatSpec with Matchers with Before
         case _ => GearmanJobResult.workFailed()
       }
     }
-
   }
-  //Register the function to the worker
-  gearmanWorker.addFunction(TEST_FUNCTION_NAME, dummyJob)
 
   override protected def beforeAll() {
     //Open the server port
     this.gearmanServer.openPort()
     //Register the function to the worker
-    this.gearmanWorker.addFunction(TEST_FUNCTION_NAME, dummyJob)
+    this.gearmanWorker.addFunction(testFunctionName, dummyJob)
     //Register the worker to the server
     this.gearmanWorker.addServer(gearmanServer)
   }
