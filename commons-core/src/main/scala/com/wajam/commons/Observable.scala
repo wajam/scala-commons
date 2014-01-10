@@ -8,32 +8,27 @@ trait Observable {
   private var observers = Set[Observer]()
   private var parents = Set[Observable]()
 
-  def addObserver(cb: Observer) {
-    observers.synchronized {
-      observers += cb
-    }
+  def addObserver(cb: Observer): Unit = synchronized {
+    observers += cb
   }
 
-  def removeObserver(cb: Observer) {
-    observers.synchronized {
-      observers -= cb
-    }
+  def removeObserver(cb: Observer): Unit = synchronized {
+    observers -= cb
   }
 
-  def addParentObservable(parent: Observable) {
+  def addParentObservable(parent: Observable): Unit = {
     assert(parent != this)
-    parents.synchronized {
+
+    synchronized {
       parents += parent
     }
   }
 
-  def removeParentObservable(parent: Observable) {
-    parents.synchronized {
-      parents -= parent
-    }
+  def removeParentObservable(parent: Observable): Unit = synchronized {
+    parents -= parent
   }
 
-  protected def notifyObservers(event: Event) {
+  protected def notifyObservers(event: Event): Unit = {
     observers.foreach(obs => obs(event))
     parents.foreach(parent => parent.notifyObservers(event))
   }
