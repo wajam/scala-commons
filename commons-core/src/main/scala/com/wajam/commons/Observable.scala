@@ -5,23 +5,30 @@ package com.wajam.commons
  */
 trait Observable {
   private type Observer = (Event) => Unit
-  private var observers = List[Observer]()
-  private var parents = List[Observable]()
+  private var observers = Set[Observer]()
+  private var parents = Set[Observable]()
 
-  def addParentObservable(parent: Observable) {
+  def addObserver(cb: Observer): Unit = synchronized {
+    observers += cb
+  }
+
+  def removeObserver(cb: Observer): Unit = synchronized {
+    observers -= cb
+  }
+
+  def addParentObservable(parent: Observable): Unit = {
     assert(parent != this)
-    this.parents :+= parent
+
+    synchronized {
+      parents += parent
+    }
   }
 
-  def addObserver(cb: Observer) {
-    this.observers :+= cb
+  def removeParentObservable(parent: Observable): Unit = synchronized {
+    parents -= parent
   }
 
-  def removeParentObservable(parent: Observable) {
-    this.observers = this.observers diff List(parent)
-  }
-
-  protected def notifyObservers(event: Event) {
+  protected def notifyObservers(event: Event): Unit = {
     observers.foreach(obs => obs(event))
     parents.foreach(parent => parent.notifyObservers(event))
   }
