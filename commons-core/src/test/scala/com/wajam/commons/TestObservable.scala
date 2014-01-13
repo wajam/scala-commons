@@ -11,10 +11,10 @@ class TestObservable extends FlatSpec with ShouldMatchers {
       def trigger(e: Event) = notifyObservers(e)
     }
 
-    var triggered = false
+    var triggerCount = 0
 
     val observer = { (e: Event) =>
-      triggered = true
+      triggerCount = triggerCount + 1
     }
   }
 
@@ -25,7 +25,7 @@ class TestObservable extends FlatSpec with ShouldMatchers {
 
     observable.trigger(new Event)
 
-    triggered should be(true)
+    triggerCount should be(1)
   }
 
   it should "NOT notify its removed observers" in new Builder {
@@ -36,7 +36,7 @@ class TestObservable extends FlatSpec with ShouldMatchers {
 
     observable.trigger(new Event)
 
-    triggered should be(false)
+    triggerCount should be(0)
   }
 
   it should "notify its parents" in new Builder {
@@ -49,7 +49,7 @@ class TestObservable extends FlatSpec with ShouldMatchers {
 
     child.trigger(new Event)
 
-    triggered should be(true)
+    triggerCount should be(1)
   }
 
   it should "NOT notify its removed parents" in new Builder {
@@ -63,6 +63,6 @@ class TestObservable extends FlatSpec with ShouldMatchers {
 
     child.trigger(new Event)
 
-    triggered should be(false)
+    triggerCount should be(0)
   }
 }
