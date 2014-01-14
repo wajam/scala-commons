@@ -3,7 +3,6 @@ package com.wajam.asyncclient
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
 import com.yammer.metrics.scala.{Timer, Instrumented}
-import java.util.concurrent.Executors
 
 trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedResponse], TypedResponse[_]] extends Instrumented {
 
@@ -15,10 +14,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
 
   implicit protected def decomposer: Decomposer[RequestBody]
 
-  // Execution context used to stop timers. I guess that's enough threads
-  implicit private val ec = ExecutionContext.fromExecutorService(Executors.newSingleThreadExecutor())
-
-  private def timeAction[T](timer: Timer)(action: => Future[T]): Future[T] = {
+  private def timeAction[T](timer: Timer)(action: => Future[T])(implicit ec: ExecutionContext): Future[T] = {
     val context = timer.timerContext()
     val actionFuture = action
     actionFuture onComplete {
@@ -36,7 +32,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
   trait CreatableResource[Value] extends Resource {
     lazy val createMeter = metrics.timer(s"$name-creates")
 
-    def create(value: Value, params: Map[String, String] = Map())(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
+    def create(value: Value, params: Map[String, String] = Map())(implicit mf: Manifest[Value], ec: ExecutionContext): Future[TypedResponse[Value]] = {
       timeAction(createMeter) {
         client.post(AsyncClient.url(url).params(params), decomposer.decompose(value)).map(_.as[Value])
       }
@@ -50,7 +46,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
   trait GettableResource[Value] extends Resource {
     lazy val getMeter = metrics.timer(s"$name-gets")
 
-    def get(params: Map[String, String] = Map())(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
+    def get(params: Map[String, String] = Map())(implicit mf: Manifest[Value], ec: ExecutionContext): Future[TypedResponse[Value]] = {
       timeAction(getMeter) {
         client.get(AsyncClient.url(url).params(params)).map(_.as[Value])
       }
@@ -60,7 +56,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
   trait ListableResource[Value] extends Resource {
     lazy val listMeter = metrics.timer(s"$name-lists")
 
-    def list(params: Map[String, String] = Map())(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
+    def list(params: Map[String, String] = Map())(implicit mf: Manifest[Value], ec: ExecutionContext): Future[TypedResponse[Value]] = {
       timeAction(listMeter) {
         client.get(AsyncClient.url(url).params(params)).map(_.as[Value])
       }
@@ -70,7 +66,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
   trait UpdatableResource[Value] extends Resource {
     lazy val updateMeter = metrics.timer(s"$name-updates")
 
-    def update(value: Value, params: Map[String, String] = Map())(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
+    def update(value: Value, params: Map[String, String] = Map())(implicit mf: Manifest[Value], ec: ExecutionContext): Future[TypedResponse[Value]] = {
       timeAction(updateMeter) {
         client.put(AsyncClient.url(url).params(params), decomposer.decompose(value)).map(_.as[Value])
       }
@@ -80,7 +76,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
   trait DeletableResource[Value] extends Resource {
     lazy val deleteMeter = metrics.timer(s"$name-deletes")
 
-    def delete(params: Map[String, String] = Map())(implicit mf: Manifest[Value]): Future[TypedResponse[Value]] = {
+    def delete(params: Map[String, String] = Map())(implicit mf: Manifest[Value], ec: ExecutionContext): Future[TypedResponse[Value]] = {
       timeAction(deleteMeter) {
         client.delete(AsyncClient.url(url).params(params)).map(_.as[Value])
       }

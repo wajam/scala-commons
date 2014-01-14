@@ -4,6 +4,7 @@ import org.scalatest.{FunSuite, Matchers}
 import com.ning.http.client.Response
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 import com.wajam.asyncclient.AsyncClient._
 
 class TestAsyncClient extends FunSuite with Matchers with AsyncClientTest {
