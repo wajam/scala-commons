@@ -25,13 +25,13 @@ class TestGearmanClient extends GearmanIntegrationTest {
     Await.ready(f, 2.seconds)
   }
 
-  "Working client" should "fail when executeJob fail data" in {
+  it should "fail when executeJob fail data" in {
     val data = Map("fail" -> "fail")
     val f = client.executeJob(testFunctionName, data)
     evaluating(Await.result(f, 2.seconds)) should produce[JobExecutionException]
   }
 
-  "Working client" should "not fail when enqueueJob success data" in {
+  it should "not fail when enqueueJob success data" in {
     val data = Map("success" -> "success")
     val f = client.enqueueJob(testFunctionName, data)
     f.onComplete {
@@ -41,7 +41,7 @@ class TestGearmanClient extends GearmanIntegrationTest {
     Await.ready(f, 2.seconds)
   }
 
-  "Working client" should "not fail when enqueueJob fail data" in {
+  it should "not fail when enqueueJob fail data" in {
     val data = Map("fail" -> "fail")
     val f = client.enqueueJob(testFunctionName, data)
     f.onComplete {
