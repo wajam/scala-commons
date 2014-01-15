@@ -3,10 +3,8 @@ package com.wajam.gearman.impl
 import java.net.InetSocketAddress
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import com.wajam.commons.Logging
-import com.yammer.metrics.scala.Instrumented
-import com.yammer.metrics.core.TimerContext
 import org.gearman.core.GearmanConstants
-import org.gearman.{GearmanClient => JavaGearmanClient, GearmanBackgroundJob, GearmanJobResult, GearmanJob, Gearman}
+import org.gearman.{GearmanBackgroundJob, GearmanJobResult, GearmanJob, Gearman}
 import org.gearman.GearmanClient.{SubmitCallbackResult, GearmanSubmitHandler}
 import org.gearman.GearmanJob.Priority
 import com.wajam.gearman.exception.{JobExecutionException, JobSubmissionException}
@@ -16,12 +14,10 @@ import com.wajam.gearman.utils.GearmanJson
 import com.wajam.tracing.Traced
 
 
-class AsyncGearmanClient(serverAddress: Seq[String])(implicit val ec: ExecutionContext) extends GearmanClient with Logging with Instrumented with Traced {
+class AsyncGearmanClient(serverAddress: Seq[String]) extends GearmanClient with Logging with Traced {
 
-  private val jobQueuedTimer = metrics.timer("job-queued", "calls")
-  private val jobCompletedTimer = metrics.timer("job-completed", "calls")
-
-  private val metricSubmitJob = tracedTimer("gearman-submit")
+  private val jobQueuedTimer = tracedTimer("gearman-submit", "gearman-submit")
+  private val jobCompletedTimer = tracedTimer("gearman-completed", "gearman-completed")
 
   private val gearmanService = new Gearman()
 
@@ -36,7 +32,7 @@ class AsyncGearmanClient(serverAddress: Seq[String])(implicit val ec: ExecutionC
 
   //Return a future that complete when the job is completed (success, failure)
   // Or failure when job can't be queued
-  override def executeJob(jobName: String, data: Map[String, Any]) = {
+  override def executeJob(jobName: String, data: Map[String, Any])(implicit ec: ExecutionContext) = {
     val jobPromised = Promise[Any]()
     sendJob(jobName, data, Priority.NORMAL_PRIORITY, Option(jobPromised)).onComplete {
       case Failure(e) => jobPromised.failure(e)
@@ -46,7 +42,7 @@ class AsyncGearmanClient(serverAddress: Seq[String])(implicit val ec: ExecutionC
   }
 
   //Return a future that complete when job is queued (success, failure)
-  override def enqueueJob(jobName: String, data: Map[String, Any]) = {
+  override def enqueueJob(jobName: String, data: Map[String, Any])(implicit ec: ExecutionContext) = {
     sendJob(jobName, data, Priority.NORMAL_PRIORITY, None)
   }
 
@@ -62,15 +58,13 @@ class AsyncGearmanClient(serverAddress: Seq[String])(implicit val ec: ExecutionC
     val jobEnqueuedPromise = Promise[Any]()
 
     if (javaGearmanClient.getServerCount > 0) {
-      val jobQueuedTimerContext: Option[TimerContext] = Some(jobQueuedTimer.timerContext())
-      var jobCompletedTimerContext: Option[TimerContext] = None
+      val jobQueuedTimerContext = jobQueuedTimer.timerContext()
+      var jobCompletedTimerContext: Option[jobCompletedTimer.TracedTimerContext] = None
 
       val handler: GearmanSubmitHandler = new GearmanSubmitHandler() {
         def onComplete(job: GearmanJob, result: SubmitCallbackResult) {
           if (!jobEnqueuedPromise.isCompleted) {
-            jobQueuedTimerContext foreach {
-              _.stop()
-            }
+            jobQueuedTimerContext.stop()
 
             if (result.isSuccessful) {
               if (jobCompletedPromise.isDefined) {
@@ -98,7 +92,7 @@ class AsyncGearmanClient(serverAddress: Seq[String])(implicit val ec: ExecutionC
                 promise.success(data)
               } else {
                 error(s"Error processing the job $jobName ${result.getJobCallbackResult.toString}")
-                promise.failure(new JobExecutionException(data, s"Job couldn't be completed properly $jobName ${result.getJobCallbackResult().toString}"))
+                promise.failure(new JobExecutionException(data, s"Job couldn't be completed properly $jobName ${result.getJobCallbackResult.toString}"))
               }
             }
 
@@ -116,16 +110,12 @@ class AsyncGearmanClient(serverAddress: Seq[String])(implicit val ec: ExecutionC
       }
 
       try {
-        metricSubmitJob.time {
-          javaGearmanClient.submitJob(job, handler)
-        }
+        javaGearmanClient.submitJob(job, handler)
       } catch {
         //UnresolvedAddressException
         case e: Exception =>
           jobEnqueuedPromise.failure(new JobSubmissionException(data, s"Couldn't submit job $jobName ${e.getMessage}"))
-          jobQueuedTimerContext foreach {
-            _.stop()
-          }
+          jobQueuedTimerContext.stop()
       }
     } else {
       error("No Gearman servers specified. Jobs can't be sent.")
