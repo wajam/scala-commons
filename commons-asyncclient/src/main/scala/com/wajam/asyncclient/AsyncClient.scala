@@ -4,24 +4,27 @@ import scala.concurrent.{ExecutionContext, Future}
 import dispatch._
 import com.ning.http.client
 import scala.language.implicitConversions
-import java.util.concurrent.{ExecutionException, Executors}
-import com.twitter.concurrent.NamedPoolThreadFactory
+import java.util.concurrent.ExecutionException
 
 trait BaseAsyncClient {
 
   def get[Response](request: Request)
-                   (implicit handler: ResponseHandler[Response]): Future[Response]
+                   (implicit handler: ResponseHandler[Response],
+                    ec: ExecutionContext): Future[Response]
 
   def post[RequestBody, Response](request: Request, value: RequestBody)
                                  (implicit requestHandler: RequestHandler[RequestBody],
-                                  responseHandler: ResponseHandler[Response]): Future[Response]
+                                  responseHandler: ResponseHandler[Response],
+                                  ec: ExecutionContext): Future[Response]
 
   def put[RequestBody, Response](request: Request, value: RequestBody)
                                 (implicit requestHandler: RequestHandler[RequestBody],
-                                 responseHandler: ResponseHandler[Response]): Future[Response]
+                                 responseHandler: ResponseHandler[Response],
+                                 ec: ExecutionContext): Future[Response]
 
   def delete[Response](request: Request)
-                      (implicit handler: ResponseHandler[Response]): Future[Response]
+                      (implicit handler: ResponseHandler[Response],
+                       ec: ExecutionContext): Future[Response]
 }
 
 // --To build using an host
@@ -65,9 +68,6 @@ class AsyncClient(config: BaseHttpClientConfig, name: String) extends BaseAsyncC
 
   def this(config: BaseHttpClientConfig) = this(config, "async-client")
 
-  private implicit val ec = ExecutionContext.fromExecutorService(
-    Executors.newFixedThreadPool(config.threadPoolSize, new NamedPoolThreadFactory(name)))
-
   private val httpClient = Http.configure(_.
     setAllowPoolingConnection(config.allowPoolingConnection).
     setConnectionTimeoutInMs(config.connectionTimeoutInMs).
@@ -91,27 +91,31 @@ class AsyncClient(config: BaseHttpClientConfig, name: String) extends BaseAsyncC
   }
 
   def get[Response](request: Request)
-                   (implicit handler: ResponseHandler[Response]): Future[Response] = {
+                   (implicit handler: ResponseHandler[Response],
+                    ec: ExecutionContext): Future[Response] = {
     httpClient(request.inner > (v => handler.to(v))).
       recover(transformException("GET", request))
   }
 
   def post[RequestBody, Response](request: Request, value: RequestBody)
                                  (implicit requestHandler: RequestHandler[RequestBody],
-                                  responseHandler: ResponseHandler[Response]): Future[Response] = {
+                                  responseHandler: ResponseHandler[Response],
+                                  ec: ExecutionContext): Future[Response] = {
     httpClient(setBody(request.inner.POST, value, requestHandler) > (v => responseHandler.to(v))).
       recover(transformException("POST", request))
   }
 
   def put[RequestBody, Response](request: Request, value: RequestBody)
                                 (implicit requestHandler: RequestHandler[RequestBody],
-                                 responseHandler: ResponseHandler[Response]): Future[Response] = {
+                                 responseHandler: ResponseHandler[Response],
+                                 ec: ExecutionContext): Future[Response] = {
     httpClient(setBody(request.inner.PUT, value, requestHandler) > (v => responseHandler.to(v))).
       recover(transformException("PUT", request))
   }
 
   def delete[Response](request: Request)
-                      (implicit handler: ResponseHandler[Response]): Future[Response] = {
+                      (implicit handler: ResponseHandler[Response],
+                       ec: ExecutionContext): Future[Response] = {
     httpClient(request.inner.DELETE > (v => handler.to(v))).
       recover(transformException("DELETE", request))
   }

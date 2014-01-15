@@ -6,7 +6,7 @@ trait BaseHttpClientConfig {
   def requestTimeoutInMs: Int
   def maximumConnectionsPerHost: Int
   def maximumConnectionsTotal: Int
-  def threadPoolSize: Int
+  @deprecated("No longer used. BYOEC (Bring your own ExecutionContext)", "January 2014") def threadPoolSize: Int
   def compressionEnabled: Boolean
 }
 

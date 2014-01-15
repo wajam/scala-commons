@@ -5,6 +5,7 @@ import net.liftweb.json.Formats
 import com.ning.http.client.Response
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class TestResource extends FunSuite with Matchers {
   test("should be able to create a simple resource") {
