@@ -33,12 +33,19 @@ class AsyncGearmanClient(serverAddress: Seq[String]) extends GearmanClient with 
   //Return a future that complete when the job is completed (success, failure)
   // Or failure when job can't be queued
   override def executeJob(jobName: String, data: Map[String, Any])(implicit ec: ExecutionContext) = {
-    val jobPromised = Promise[Any]()
-    sendJob(jobName, data, Priority.NORMAL_PRIORITY, Option(jobPromised)).onComplete {
-      case Failure(e) => jobPromised.failure(e)
-      case Success(v) => //Do Nothing, the future returned is for execution purpose, the appropriate future will be completed in sendJob function
+    val jobCompletedPromise = Promise[Any]()
+    var jobCompletedTimerContext: Option[jobCompletedTimer.TracedTimerContext] = None
+    sendJob(jobName, data, Priority.NORMAL_PRIORITY, Option(jobCompletedPromise)).onComplete {
+      case Failure(e) => jobCompletedPromise.failure(e)
+      case Success(v) => {
+        // The job has been submitted successfully. Starting the completion timer to track how long it takes to
+        // complete the job after being queued for processing.
+        jobCompletedTimerContext = Some(jobCompletedTimer.timerContext())
+      }
     }
-    jobPromised.future
+    val jobCompletedFuture = jobCompletedPromise.future
+    jobCompletedFuture.onComplete( _ => jobCompletedTimerContext.foreach(_.stop()))
+    jobCompletedFuture
   }
 
   //Return a future that complete when job is queued (success, failure)
@@ -54,26 +61,20 @@ class AsyncGearmanClient(serverAddress: Seq[String]) extends GearmanClient with 
 
   //Private method that send job to Gearman
   // with an Option of jobCompletedPromise: If set, will create a callback on a completion, else it will be a background job
-  private def sendJob(jobName: String, data: Map[String, Any], gearmanPriority: Priority, jobCompletedPromise: Option[Promise[Any]]): Future[Any] = {
-    val jobEnqueuedPromise = Promise[Any]()
+  private def sendJob(jobName: String, data: Map[String, Any], gearmanPriority: Priority, jobCompletedPromise: Option[Promise[Any]])(implicit ec: ExecutionContext): Future[Any] = {
+    val jobEnqueuePromise = Promise[Any]()
+    val jobEnqueueTimerContext = jobQueuedTimer.timerContext()
 
     if (javaGearmanClient.getServerCount > 0) {
-      val jobQueuedTimerContext = jobQueuedTimer.timerContext()
-      var jobCompletedTimerContext: Option[jobCompletedTimer.TracedTimerContext] = None
 
       val handler: GearmanSubmitHandler = new GearmanSubmitHandler() {
         def onComplete(job: GearmanJob, result: SubmitCallbackResult) {
-          if (!jobEnqueuedPromise.isCompleted) {
-            jobQueuedTimerContext.stop()
-
+          if (!jobEnqueuePromise.isCompleted) {
             if (result.isSuccessful) {
-              if (jobCompletedPromise.isDefined) {
-                jobCompletedTimerContext = Some(jobCompletedTimer.timerContext())
-              }
-              jobEnqueuedPromise.success(data)
+              jobEnqueuePromise.success(data)
             } else {
               error("Couldn't submit job", result.toString)
-              jobEnqueuedPromise.failure(new JobSubmissionException(data, s"Couldn't submit job $jobName ${result.toString}"))
+              jobEnqueuePromise.failure(new JobSubmissionException(data, s"Couldn't submit job $jobName ${result.toString}"))
             }
           }
         }
@@ -84,10 +85,6 @@ class AsyncGearmanClient(serverAddress: Seq[String]) extends GearmanClient with 
         case Some(promise) =>
           new GearmanJob(jobName, GearmanJson.encodeAsJson(data), gearmanPriority) {
             protected def onComplete(result: GearmanJobResult) {
-              jobCompletedTimerContext foreach {
-                _.stop()
-              }
-
               if (result.isSuccessful) {
                 promise.success(data)
               } else {
@@ -96,14 +93,11 @@ class AsyncGearmanClient(serverAddress: Seq[String]) extends GearmanClient with 
               }
             }
 
-            def callbackWarning(warning: Array[Byte]) {
-            }
+            def callbackWarning(warning: Array[Byte]) {}
 
-            def callbackStatus(numerator: Long, denominator: Long) {
-            }
+            def callbackStatus(numerator: Long, denominator: Long) {}
 
-            def callbackData(data: Array[Byte]) {
-            }
+            def callbackData(data: Array[Byte]) {}
           }
         //Create a background gearman job (no callback)
         case None => new GearmanBackgroundJob(jobName, GearmanJson.encodeAsJson(data), gearmanPriority)
@@ -113,16 +107,17 @@ class AsyncGearmanClient(serverAddress: Seq[String]) extends GearmanClient with 
         javaGearmanClient.submitJob(job, handler)
       } catch {
         //UnresolvedAddressException
-        case e: Exception =>
-          jobEnqueuedPromise.failure(new JobSubmissionException(data, s"Couldn't submit job $jobName ${e.getMessage}"))
-          jobQueuedTimerContext.stop()
+        case e: Exception => jobEnqueuePromise.failure(
+          new JobSubmissionException(data, s"Couldn't submit job $jobName ${e.getMessage}"))
       }
     } else {
       error("No Gearman servers specified. Jobs can't be sent.")
-      jobEnqueuedPromise.failure(new JobSubmissionException(data, s"Couldn't submit job $jobName, no servers specified."))
+      jobEnqueuePromise.failure(new JobSubmissionException(data, s"Couldn't submit job $jobName, no servers specified."))
     }
 
-    jobEnqueuedPromise.future
+    val jobEnqueueFuture = jobEnqueuePromise.future
+    jobEnqueueFuture.onComplete(_ => jobEnqueueTimerContext.stop())
+    jobEnqueueFuture
   }
 
 }
