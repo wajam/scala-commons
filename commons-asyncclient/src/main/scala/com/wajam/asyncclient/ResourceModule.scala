@@ -2,9 +2,9 @@ package com.wajam.asyncclient
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
-import com.yammer.metrics.scala.{Timer, Instrumented}
+import com.wajam.tracing.{TracedTimer, Traced}
 
-trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedResponse], TypedResponse[_]] extends Instrumented {
+trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedResponse], TypedResponse[_]] extends Traced {
 
   protected def client: BaseAsyncClient
 
@@ -14,7 +14,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
 
   implicit protected def decomposer: Decomposer[RequestBody]
 
-  private def timeAction[T](timer: Timer)(action: => Future[T])(implicit ec: ExecutionContext): Future[T] = {
+  private def timeAction[T](timer: TracedTimer)(action: => Future[T])(implicit ec: ExecutionContext): Future[T] = {
     val context = timer.timerContext()
     val actionFuture = action
     actionFuture onComplete {
@@ -30,7 +30,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
   }
 
   trait CreatableResource[Value] extends Resource {
-    lazy val createMeter = metrics.timer(s"$name-creates")
+    lazy val createMeter = tracedTimer(s"$name-creates")
 
     def create(value: Value, params: Map[String, String] = Map())(implicit mf: Manifest[Value], ec: ExecutionContext): Future[TypedResponse[Value]] = {
       timeAction(createMeter) {
@@ -44,7 +44,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
   }
 
   trait GettableResource[Value] extends Resource {
-    lazy val getMeter = metrics.timer(s"$name-gets")
+    lazy val getMeter = tracedTimer(s"$name-gets")
 
     def get(params: Map[String, String] = Map())(implicit mf: Manifest[Value], ec: ExecutionContext): Future[TypedResponse[Value]] = {
       timeAction(getMeter) {
@@ -54,7 +54,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
   }
 
   trait ListableResource[Value] extends Resource {
-    lazy val listMeter = metrics.timer(s"$name-lists")
+    lazy val listMeter = tracedTimer(s"$name-lists")
 
     def list(params: Map[String, String] = Map())(implicit mf: Manifest[Value], ec: ExecutionContext): Future[TypedResponse[Value]] = {
       timeAction(listMeter) {
@@ -64,7 +64,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
   }
 
   trait UpdatableResource[Value] extends Resource {
-    lazy val updateMeter = metrics.timer(s"$name-updates")
+    lazy val updateMeter = tracedTimer(s"$name-updates")
 
     def update(value: Value, params: Map[String, String] = Map())(implicit mf: Manifest[Value], ec: ExecutionContext): Future[TypedResponse[Value]] = {
       timeAction(updateMeter) {
@@ -74,7 +74,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
   }
 
   trait DeletableResource[Value] extends Resource {
-    lazy val deleteMeter = metrics.timer(s"$name-deletes")
+    lazy val deleteMeter = tracedTimer(s"$name-deletes")
 
     def delete(params: Map[String, String] = Map())(implicit mf: Manifest[Value], ec: ExecutionContext): Future[TypedResponse[Value]] = {
       timeAction(deleteMeter) {
