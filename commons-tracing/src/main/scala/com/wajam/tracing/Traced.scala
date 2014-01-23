@@ -33,14 +33,10 @@ class TracedTimer(val timer: Timer, val name: String, val source: Option[String]
    * Runs block, recording its duration, and returns the result of block.
    */
   def time[S](block: => S): S = {
-    val tracer = Tracer.currentTracer
     timer.time {
-      if (tracer.isDefined) {
-        tracer.get.time(name, source) {
-          block
-        }
-      } else {
-        block
+      Tracer.currentTracer match {
+        case Some(tracer) => tracer.time(name, source) { block }
+        case _ => block
       }
     }
   }
@@ -48,11 +44,8 @@ class TracedTimer(val timer: Timer, val name: String, val source: Option[String]
   /**
    * Adds a recorded duration.
    */
-  def update(duration: Long, unit: TimeUnit) {
-    val tracer = Tracer.currentTracer
-    if (tracer.isDefined) {
-      tracer.get.record(Message(name, source), Some(unit.toMillis(duration)))
-    }
+  def update(duration: Long, unit: TimeUnit, extra: String = "") {
+    Tracer.currentTracer.foreach(_.record(Message(content(extra), source), Some(unit.toMillis(duration))))
     timer.update(duration, unit)
   }
 
@@ -64,13 +57,14 @@ class TracedTimer(val timer: Timer, val name: String, val source: Option[String]
 
     private val startTime: Long = optTracer.map(_.currentTimeGenerator.currentTime).getOrElse(0)
 
-    def stop() {
+    def stop(extra: String = "") {
       timerContext.stop()
       for (tracer <- optTracer) {
         val endTime: Long = tracer.currentTimeGenerator.currentTime
-        tracer.record(Message(name, source), Some(endTime - startTime))
+        tracer.record(Message(content(extra), source), Some(endTime - startTime))
       }
     }
   }
 
+  def content(extra: String) = if (extra.isEmpty) name else s"$name [$extra]"
 }
