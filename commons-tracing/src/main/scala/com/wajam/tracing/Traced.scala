@@ -70,7 +70,7 @@ class TracedTimer(val timer: Timer, val name: String, val source: Option[String]
     if (extra.isEmpty) {
       name
     } else {
-      s"$name ${extra.map(t => s"${t._1}=${t._2}").mkString("[", ",", "]")}"
+      s"$name ${extra.map { case (k, v) => s"$k=$v"}.mkString("[", ",", "]")}"
     }
   }
 }
