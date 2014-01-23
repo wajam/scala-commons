@@ -111,13 +111,13 @@ class TestTraced extends FunSuite with BeforeAndAfter with MockitoSugar {
     val mockTimer = mock[Timer]
     val tracedTimer = new TracedTimer(mockTimer, "myName", Some("mySource"))
 
-    val message = Message("myName [extra]", Some("mySource"))
+    val message = Message("myName [extra=value]", Some("mySource"))
     var context: Option[TraceContext] = None
     val duration = 1000
 
     tracer.trace() {
       context = tracer.currentContext
-      tracedTimer.update(duration, TimeUnit.MILLISECONDS, "extra")
+      tracedTimer.update(duration, TimeUnit.MILLISECONDS, Map("extra" -> "value"))
     }
 
     verify(mockTimer).update(duration, TimeUnit.MILLISECONDS)
@@ -171,7 +171,7 @@ class TestTraced extends FunSuite with BeforeAndAfter with MockitoSugar {
 
     val tracedTimer = new TracedTimer(yammerTimer, "myName", Some("mySource"))
 
-    val message = Message("myName [extra]", Some("mySource"))
+    val message = Message("myName [extra=value]", Some("mySource"))
     var context: Option[TraceContext] = None
     val duration = 250
 
@@ -180,7 +180,7 @@ class TestTraced extends FunSuite with BeforeAndAfter with MockitoSugar {
       val timerContext = tracedTimer.timerContext()
       Thread.sleep(duration) // Delay for yammer timer
       time.currentTime += duration
-      timerContext.stop("extra")
+      timerContext.stop(Map("extra" -> "value"))
     }
 
     val endTime = yammerTimer.min
