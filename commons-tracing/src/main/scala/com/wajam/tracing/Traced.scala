@@ -44,7 +44,7 @@ class TracedTimer(val timer: Timer, val name: String, val source: Option[String]
   /**
    * Adds a recorded duration.
    */
-  def update(duration: Long, unit: TimeUnit, extra: String = "") {
+  def update(duration: Long, unit: TimeUnit, extra: Map[String, String] = Map()) {
     Tracer.currentTracer.foreach(_.record(Message(content(extra), source), Some(unit.toMillis(duration))))
     timer.update(duration, unit)
   }
@@ -57,7 +57,7 @@ class TracedTimer(val timer: Timer, val name: String, val source: Option[String]
 
     private val startTime: Long = optTracer.map(_.currentTimeGenerator.currentTime).getOrElse(0)
 
-    def stop(extra: String = "") {
+    def stop(extra: Map[String, String] = Map()) {
       timerContext.stop()
       for (tracer <- optTracer) {
         val endTime: Long = tracer.currentTimeGenerator.currentTime
@@ -66,5 +66,11 @@ class TracedTimer(val timer: Timer, val name: String, val source: Option[String]
     }
   }
 
-  def content(extra: String) = if (extra.isEmpty) name else s"$name [$extra]"
+  def content(extra: Map[String, String]) = {
+    if (extra.isEmpty) {
+      name
+    } else {
+      s"$name ${extra.map { case (k, v) => s"$k=$v"}.mkString("[", ",", "]")}"
+    }
+  }
 }

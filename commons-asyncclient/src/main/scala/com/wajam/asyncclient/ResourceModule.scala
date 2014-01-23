@@ -16,7 +16,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
 
   implicit protected def decomposer: Decomposer[RequestBody]
 
-  private def timeAction[T](timer: TracedTimer)(action: => Future[(String, T)])(implicit ec: ExecutionContext): Future[T] = {
+  private def timeAction[T](timer: TracedTimer)(action: => Future[(Map[String, String], T)])(implicit ec: ExecutionContext): Future[T] = {
     val context = timer.timerContext()
     val actionFuture = action
     actionFuture onComplete {
@@ -104,7 +104,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
       responseHandler.to(value)
     }
 
-    def extra: String = response.map(_.getStatusCode.toString).getOrElse("")
+    def extra: Map[String, String] = response.map(r => Map("code=" -> r.getStatusCode.toString)).getOrElse(Map())
   }
 }
 
