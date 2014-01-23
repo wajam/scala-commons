@@ -106,6 +106,24 @@ class TestTraced extends FunSuite with BeforeAndAfter with MockitoSugar {
     verify(mockRecorder).record(Record(context.get, time.currentTime, message, Some(duration)))
   }
 
+  test("TracedTimer.update should trace and update timer within a tracing context with extra") {
+
+    val mockTimer = mock[Timer]
+    val tracedTimer = new TracedTimer(mockTimer, "myName", Some("mySource"))
+
+    val message = Message("myName [extra]", Some("mySource"))
+    var context: Option[TraceContext] = None
+    val duration = 1000
+
+    tracer.trace() {
+      context = tracer.currentContext
+      tracedTimer.update(duration, TimeUnit.MILLISECONDS, "extra")
+    }
+
+    verify(mockTimer).update(duration, TimeUnit.MILLISECONDS)
+    verify(mockRecorder).record(Record(context.get, time.currentTime, message, Some(duration)))
+  }
+
   test("TracedTimer.update should update timer without error outside a tracing context") {
 
     val mockTimer = mock[Timer]
@@ -136,6 +154,33 @@ class TestTraced extends FunSuite with BeforeAndAfter with MockitoSugar {
       Thread.sleep(duration) // Delay for yammer timer
       time.currentTime += duration
       timerContext.stop()
+    }
+
+    val endTime = yammerTimer.min
+
+    yammerTimer.min should be > (0.0)
+    verify(mockRecorder).record(Record(context.get, time.currentTime, message, Some(duration)))
+    yammerTimer.min should be (endTime)
+  }
+
+  test("TracedTimer.timerContext should trace and use timerContext from Metrics with extra") {
+
+    val yammerTimer = new Timer(Metrics.defaultRegistry().newTimer(classOf[TracedTimer], "timer"))
+    yammerTimer.clear()
+    yammerTimer.min should be(0.0)
+
+    val tracedTimer = new TracedTimer(yammerTimer, "myName", Some("mySource"))
+
+    val message = Message("myName [extra]", Some("mySource"))
+    var context: Option[TraceContext] = None
+    val duration = 250
+
+    tracer.trace() {
+      context = tracer.currentContext
+      val timerContext = tracedTimer.timerContext()
+      Thread.sleep(duration) // Delay for yammer timer
+      time.currentTime += duration
+      timerContext.stop("extra")
     }
 
     val endTime = yammerTimer.min
