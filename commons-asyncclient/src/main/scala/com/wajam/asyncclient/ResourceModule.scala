@@ -3,6 +3,8 @@ package com.wajam.asyncclient
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
 import com.wajam.tracing.{TracedTimer, Traced}
+import scala.util.Success
+import com.ning.http.client.Response
 
 trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedResponse], TypedResponse[_]] extends Traced {
 
@@ -14,13 +16,14 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
 
   implicit protected def decomposer: Decomposer[RequestBody]
 
-  private def timeAction[T](timer: TracedTimer)(action: => Future[T])(implicit ec: ExecutionContext): Future[T] = {
+  private def timeAction[T](timer: TracedTimer)(action: => Future[(String, T)])(implicit ec: ExecutionContext): Future[T] = {
     val context = timer.timerContext()
     val actionFuture = action
     actionFuture onComplete {
+      case Success((extra, _)) => context.stop(extra)
       case _ => context.stop()
     }
-    actionFuture
+    actionFuture.map { case (_, value) => value}
   }
 
   trait Resource {
@@ -33,8 +36,10 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
     lazy val createMeter = tracedTimer(s"$name-creates")
 
     def create(value: Value, params: Map[String, String] = Map())(implicit mf: Manifest[Value], ec: ExecutionContext): Future[TypedResponse[Value]] = {
+      implicit val captor = new ResponseHandlerCaptor
       timeAction(createMeter) {
-        client.post(AsyncClient.url(url).params(params), decomposer.decompose(value)).map(_.as[Value])
+        val responseFuture = client.post(AsyncClient.url(url).params(params), decomposer.decompose(value))
+        responseFuture.map(response => (captor.extra, response.as[Value]))
       }
     }
   }
@@ -47,8 +52,10 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
     lazy val getMeter = tracedTimer(s"$name-gets")
 
     def get(params: Map[String, String] = Map())(implicit mf: Manifest[Value], ec: ExecutionContext): Future[TypedResponse[Value]] = {
+      implicit val captor = new ResponseHandlerCaptor
       timeAction(getMeter) {
-        client.get(AsyncClient.url(url).params(params)).map(_.as[Value])
+        val responseFuture = client.get(AsyncClient.url(url).params(params))
+        responseFuture.map(response => (captor.extra, response.as[Value]))
       }
     }
   }
@@ -57,8 +64,10 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
     lazy val listMeter = tracedTimer(s"$name-lists")
 
     def list(params: Map[String, String] = Map())(implicit mf: Manifest[Value], ec: ExecutionContext): Future[TypedResponse[Value]] = {
+      implicit val captor = new ResponseHandlerCaptor
       timeAction(listMeter) {
-        client.get(AsyncClient.url(url).params(params)).map(_.as[Value])
+        val responseFuture = client.get(AsyncClient.url(url).params(params))
+        responseFuture.map(response => (captor.extra, response.as[Value]))
       }
     }
   }
@@ -67,8 +76,10 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
     lazy val updateMeter = tracedTimer(s"$name-updates")
 
     def update(value: Value, params: Map[String, String] = Map())(implicit mf: Manifest[Value], ec: ExecutionContext): Future[TypedResponse[Value]] = {
+      implicit val captor = new ResponseHandlerCaptor
       timeAction(updateMeter) {
-        client.put(AsyncClient.url(url).params(params), decomposer.decompose(value)).map(_.as[Value])
+        val responseFuture = client.put(AsyncClient.url(url).params(params), decomposer.decompose(value))
+        responseFuture.map(response => (captor.extra, response.as[Value]))
       }
     }
   }
@@ -77,12 +88,24 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
     lazy val deleteMeter = tracedTimer(s"$name-deletes")
 
     def delete(params: Map[String, String] = Map())(implicit mf: Manifest[Value], ec: ExecutionContext): Future[TypedResponse[Value]] = {
+      implicit val captor = new ResponseHandlerCaptor
       timeAction(deleteMeter) {
-        client.delete(AsyncClient.url(url).params(params)).map(_.as[Value])
+        val responseFuture = client.delete(AsyncClient.url(url).params(params))
+        responseFuture.map(response => (captor.extra, response.as[Value]))
       }
     }
   }
 
+  private class ResponseHandlerCaptor extends ResponseHandler[ResponseMessage] {
+    private var response: Option[Response] = None
+
+    def to(value: Response) = {
+      response = Some(value)
+      responseHandler.to(value)
+    }
+
+    def extra: String = response.map(_.getStatusCode.toString).getOrElse("")
+  }
 }
 
 trait Decomposer[I] {
