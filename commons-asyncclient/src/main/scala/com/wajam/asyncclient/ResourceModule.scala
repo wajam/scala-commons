@@ -104,7 +104,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
       responseHandler.to(value)
     }
 
-    def extra: Map[String, String] = response.map(r => Map("code=" -> r.getStatusCode.toString)).getOrElse(Map())
+    def extra: Map[String, String] = response.map(r => Map("code" -> r.getStatusCode.toString)).getOrElse(Map())
   }
 }
 
