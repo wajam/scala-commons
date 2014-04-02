@@ -370,7 +370,7 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
     val statement = connection.prepareStatement(sql)
     statement.setFetchSize(100)
     args.zipWithIndex foreach {
-      case (p, i) => statement.setObject(i, p)
+      case (p, i) => statement.setObject(i + 1, p)
     }
 
     statement
