@@ -95,7 +95,7 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
         optCon = Option(getConnection(!forWrite))
         optCon match {
           case Some(con) => {
-            optStatement = Option(prepareStatement(con, sql, args: _*))
+            optStatement = Option(prepareStatement(con, sql, Statement.NO_GENERATED_KEYS, args: _*))
             optStatement match {
               case Some(statement) => {
                 val res = statement.executeQuery()
@@ -149,7 +149,7 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
     try {
       this.metricInsert.time {
         con = getConnection(readOnly = false)
-        statement = prepareStatement(con, sql, args: _*)
+        statement = prepareStatement(con, sql, Statement.RETURN_GENERATED_KEYS, args: _*)
 
         if (statement.executeUpdate() == 1) {
           val resultSet = statement.getGeneratedKeys
@@ -183,7 +183,7 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
     try {
       this.metricUpdate.time {
         con = getConnection(readOnly = false)
-        statement = prepareStatement(con, sql, args: _*)
+        statement = prepareStatement(con, sql, Statement.NO_GENERATED_KEYS, args: _*)
 
         statement.executeUpdate()
       }
@@ -206,7 +206,7 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
     try {
       this.metricDelete.time {
         con = getConnection(readOnly = false)
-        statement = prepareStatement(con, sql)
+        statement = prepareStatement(con, sql, Statement.NO_GENERATED_KEYS)
 
         statement.executeUpdate()
       }
@@ -365,7 +365,10 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
     args.toSeq
   }
 
-  private def prepareStatement(connection: Connection, sql: String, args: Any*) = {
+  /**
+   * @param generateKeys Statement.RETURN_GENERATED_KEYS or Statement.NO_GENERATED_KEYS
+   */
+  private def prepareStatement(connection: Connection, sql: String, generateKeys: Int, args: Any*) = {
 
     val statement = connection.prepareStatement(sql)
     statement.setFetchSize(100)
