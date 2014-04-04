@@ -370,7 +370,7 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
    */
   private def prepareStatement(connection: Connection, sql: String, generateKeys: Int, args: Any*) = {
 
-    val statement = connection.prepareStatement(sql)
+    val statement = connection.prepareStatement(sql, generateKeys)
     statement.setFetchSize(100)
     args.zipWithIndex foreach {
       case (p, i) => statement.setObject(i + 1, p)
