@@ -62,6 +62,8 @@ sealed trait Request {
   def /(path: String): Request
 
   def params(paramList: Map[String, String]): Request
+
+  def auth(username: String, password: String): Request
 }
 
 class AsyncClient(config: BaseHttpClientConfig, name: String) extends BaseAsyncClient {
@@ -136,6 +138,8 @@ object AsyncClient {
     def /(path: String) = RequestImpl(inner / path)
 
     def params(paramList: Map[String, String]) = RequestImpl(inner <<? paramList)
+
+    def auth(username: String, password: String) = RequestImpl(inner as(username, password))
 
     override def toString(): String = inner.toRequest.getUrl
   }
