@@ -433,8 +433,39 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
     }
   }
 
+  private def innerGetSlaveDataSource: (Int, DataSource) = {
+    if (slaves.isEmpty) {
+      null
+    } else {
+      val availableSlaves = slaves.filter(_.available)
+      if (availableSlaves.length > 0) {
+        val index = random.nextInt(availableSlaves.length)
+        try {
+          (index, availableSlaves(index).datasource)
+        } catch {
+          case e: Exception => {
+            slaveConnectionFailedAttempt(index).mark()
+            throw e
+          }
+        }
+      } else {
+        null
+      }
+    }
+  }
+
   private def getSlaveConnection: Connection = {
-    getSlaveDatasource.getConnection
+    Option(innerGetSlaveDataSource) match {
+      case None => null
+      case Some((index, ds)) => try {
+        ds.getConnection
+      } catch {
+        case e: Exception => {
+          slaveConnectionFailedAttempt(index).mark()
+          throw e
+        }
+      }
+    }
   }
 
   private def getMasterConnection: Connection = {
@@ -452,19 +483,9 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
   def getMasterDatasource: DataSource = masterComboPooledDatasource
 
   def getSlaveDatasource: DataSource = {
-    val availableSlaves = slaves.filter(_.available)
-    if (availableSlaves.length > 0) {
-      val index = random.nextInt(availableSlaves.length)
-      try {
-        availableSlaves(index).datasource
-      } catch {
-        case e: Exception => {
-          slaveConnectionFailedAttempt(index).mark()
-          throw e
-        }
-      }
-    } else {
-      null
+    Option(innerGetSlaveDataSource) match {
+      case Some((_, ds)) => ds
+      case None => null
     }
   }
 
