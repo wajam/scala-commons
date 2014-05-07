@@ -13,6 +13,7 @@ import com.wajam.tracing.Traced
 import scala.annotation.tailrec
 
 import scala.language.higherKinds
+import javax.sql.DataSource
 
 /**
  * MySQL database access helper
@@ -22,14 +23,14 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
   private val MYSQL_URL: String = "jdbc:mysql://%s/%s?zeroDateTimeBehavior=convertToNull&characterEncoding=UTF-8"
   private val random = new Random
   private val servers = configuration.serverNames
-  private val masterDatasource: ComboPooledDataSource = new ComboPooledDataSource
+  private val masterComboPooledDatasource: ComboPooledDataSource = new ComboPooledDataSource
   private val databaseCredentials = new util.Properties()
   databaseCredentials.put("user", configuration.username)
   databaseCredentials.put("password", configuration.password)
 
-  masterDatasource.setDriverClass("com.mysql.jdbc.Driver")
-  masterDatasource.setJdbcUrl(String.format(MYSQL_URL, servers(0), configuration.database))
-  configureDatasource(masterDatasource, isMaster = true)
+  masterComboPooledDatasource.setDriverClass("com.mysql.jdbc.Driver")
+  masterComboPooledDatasource.setJdbcUrl(String.format(MYSQL_URL, servers(0), configuration.database))
+  configureDatasource(masterComboPooledDatasource, isMaster = true)
 
   private val slaves = servers.drop(1).map(server => {
     val slaveDatasource = new ComboPooledDataSource
@@ -52,7 +53,7 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
   private lazy val metricUpdate = tracedTimer(configuration.dbname + "-mysql-update")
   private lazy val metricDelete = tracedTimer(configuration.dbname + "-mysql-delete")
   private val metricMasterPoolSize = metrics.gauge(configuration.dbname + "-master-connection-pool-size") {
-    masterDatasource.getNumConnectionsDefaultUser
+    masterComboPooledDatasource.getNumConnectionsDefaultUser
   }
   private val metricSlavesPoolSize =
     slaves.map(s => metrics.gauge(configuration.dbname + "-slave-connection-pool-size-" + s.name.replace(".", "-")) {
@@ -78,7 +79,7 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
   }
 
   def shutdown() {
-    masterDatasource.close()
+    masterComboPooledDatasource.close()
     slaves.foreach(_.datasource.close())
   }
 
@@ -433,29 +434,12 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
   }
 
   private def getSlaveConnection: Connection = {
-    if (slaves.length == 0) {
-      null
-    } else {
-      val availableSlaves = slaves.filter(_.available)
-      if (availableSlaves.length > 0) {
-        val index = random.nextInt(availableSlaves.length)
-        try {
-          availableSlaves(index).datasource.getConnection
-        } catch {
-          case e: Exception => {
-            slaveConnectionFailedAttempt(index).mark()
-            throw e
-          }
-        }
-      } else {
-        null
-      }
-    }
+    getSlaveDatasource.getConnection
   }
 
   private def getMasterConnection: Connection = {
     try {
-      masterDatasource.getConnection
+      masterComboPooledDatasource.getConnection
     } catch {
       case e: Exception => {
         masterConnectionFailedAttempt.mark()
@@ -463,6 +447,25 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
       }
     }
 
+  }
+
+  def getMasterDatasource: DataSource = masterComboPooledDatasource
+
+  def getSlaveDatasource: DataSource = {
+    val availableSlaves = slaves.filter(_.available)
+    if (availableSlaves.length > 0) {
+      val index = random.nextInt(availableSlaves.length)
+      try {
+        availableSlaves(index).datasource
+      } catch {
+        case e: Exception => {
+          slaveConnectionFailedAttempt(index).mark()
+          throw e
+        }
+      }
+    } else {
+      null
+    }
   }
 
   private def configureDatasource(datasource: ComboPooledDataSource, isMaster: Boolean) {
@@ -513,7 +516,7 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
     }
   }
 
-  class Slave(val name: String, val datasource: ComboPooledDataSource, val driver: Driver) {
+  private class Slave(val name: String, val datasource: ComboPooledDataSource, val driver: Driver) {
     @volatile
     var available = true
   }
