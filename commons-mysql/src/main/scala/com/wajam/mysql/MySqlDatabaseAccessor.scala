@@ -1,19 +1,15 @@
 package com.wajam.mysql
 
-import com.mchange.v2.c3p0.ComboPooledDataSource
 import com.wajam.commons.Logging
 import java.sql._
 import collection.mutable.ArrayBuffer
 import com.yammer.metrics.scala.Instrumented
-import scala.util.{Failure, Success, Try, Random}
-import java.util.concurrent.{TimeUnit, ScheduledThreadPoolExecutor}
-import java.util
+import scala.util.{Failure, Success, Try}
 import scala.collection.generic.CanBuildFrom
 import com.wajam.tracing.Traced
 import scala.annotation.tailrec
 
 import scala.language.higherKinds
-import javax.sql.DataSource
 
 /**
  * MySQL database access helper
