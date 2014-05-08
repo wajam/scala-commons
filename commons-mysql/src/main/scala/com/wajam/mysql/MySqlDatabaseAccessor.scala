@@ -20,50 +20,14 @@ import javax.sql.DataSource
  */
 class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends Logging with Instrumented with Traced {
 
-  private val MYSQL_URL: String = "jdbc:mysql://%s/%s?zeroDateTimeBehavior=convertToNull&characterEncoding=UTF-8"
-  private val random = new Random
-  private val servers = configuration.serverNames
-  private val masterComboPooledDatasource: ComboPooledDataSource = new ComboPooledDataSource
-  private val databaseCredentials = new util.Properties()
-  databaseCredentials.put("user", configuration.username)
-  databaseCredentials.put("password", configuration.password)
-
-  masterComboPooledDatasource.setDriverClass("com.mysql.jdbc.Driver")
-  masterComboPooledDatasource.setJdbcUrl(String.format(MYSQL_URL, servers(0), configuration.database))
-  configureDatasource(masterComboPooledDatasource, isMaster = true)
-
-  private val slaves = servers.drop(1).map(server => {
-    val slaveDatasource = new ComboPooledDataSource
-    slaveDatasource.setJdbcUrl(String.format(MYSQL_URL, server, configuration.database))
-    configureDatasource(slaveDatasource, isMaster = false)
-    new Slave(server, slaveDatasource, new com.mysql.jdbc.Driver())
-  })
-
-  if (slaves.length > 0 && configuration.slaveMonitoringEnabled) {
-    new ScheduledThreadPoolExecutor(1).scheduleAtFixedRate(new Runnable {
-      def run() {
-        monitorSlave
-      }
-    }, configuration.slaveMonitoringIntervalSec,
-      configuration.slaveMonitoringIntervalSec, TimeUnit.SECONDS)
-  }
+  private val datasources = new MySqlDatasourceAccessor(configuration)
 
   private lazy val metricSelect = tracedTimer(configuration.dbname + "-mysql-select")
   private lazy val metricInsert = tracedTimer(configuration.dbname + "-mysql-insert")
   private lazy val metricUpdate = tracedTimer(configuration.dbname + "-mysql-update")
   private lazy val metricDelete = tracedTimer(configuration.dbname + "-mysql-delete")
-  private val metricMasterPoolSize = metrics.gauge(configuration.dbname + "-master-connection-pool-size") {
-    masterComboPooledDatasource.getNumConnectionsDefaultUser
-  }
-  private val metricSlavesPoolSize =
-    slaves.map(s => metrics.gauge(configuration.dbname + "-slave-connection-pool-size-" + s.name.replace(".", "-")) {
-      s.datasource.getNumConnectionsDefaultUser
-    })
 
   private lazy val masterConnectionFailedAttempt = metrics.meter(configuration.dbname + "-master-connection-attempt-failed", "failed-attempt")
-  private lazy val slaveConnectionFailedAttempt = slaves.map(s => {
-    metrics.meter(configuration.dbname + "-slave-connection-attempt-failed-" + s.name.replace(".", "-"), "failed-attempt")
-  })
 
   def executeSelect[A](sql: String, callback: (ResultSet) => Option[A], args: Any*): Option[A] = {
     innerSelect[A](sql, false, callback, args: _*)
@@ -79,12 +43,8 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
   }
 
   def shutdown() {
-    masterComboPooledDatasource.close()
-    slaves.foreach(_.datasource.close())
-  }
-
-  private def hasSlaves(): Boolean = {
-    servers.length > 1
+    datasources.masterDatasource.close()
+    datasources.slaves.foreach(_.datasource.close())
   }
 
   private def innerSelect[T](sql: String, forWrite: Boolean, callback: (ResultSet) => Option[T], args: Any*): Option[T] = {
@@ -421,7 +381,7 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
       if (conn != null) {
         conn
       } else {
-        if (hasSlaves)
+        if (datasources.hasSlaves)
         // Slave are down, stop here to prevent master flooding.
           throw new SQLException("All slave are down, impossible to execute statement")
         else
@@ -433,35 +393,14 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
     }
   }
 
-  private def innerGetSlaveDataSource: (Int, DataSource) = {
-    if (slaves.isEmpty) {
-      null
-    } else {
-      val availableSlaves = slaves.filter(_.available)
-      if (availableSlaves.length > 0) {
-        val index = random.nextInt(availableSlaves.length)
-        try {
-          (index, availableSlaves(index).datasource)
-        } catch {
-          case e: Exception => {
-            slaveConnectionFailedAttempt(index).mark()
-            throw e
-          }
-        }
-      } else {
-        null
-      }
-    }
-  }
-
   private def getSlaveConnection: Connection = {
-    Option(innerGetSlaveDataSource) match {
+    Option(datasources.innerGetSlaveDataSource) match {
       case None => null
       case Some((index, ds)) => try {
         ds.getConnection
       } catch {
         case e: Exception => {
-          slaveConnectionFailedAttempt(index).mark()
+          datasources.slaveConnectionFailedAttempt(index).mark()
           throw e
         }
       }
@@ -470,7 +409,7 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
 
   private def getMasterConnection: Connection = {
     try {
-      masterComboPooledDatasource.getConnection
+      datasources.masterDatasource.getConnection
     } catch {
       case e: Exception => {
         masterConnectionFailedAttempt.mark()
@@ -478,68 +417,6 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
       }
     }
 
-  }
-
-  def getMasterDatasource: DataSource = masterComboPooledDatasource
-
-  def getSlaveDatasource: DataSource = {
-    Option(innerGetSlaveDataSource) match {
-      case Some((_, ds)) => ds
-      case None => null
-    }
-  }
-
-  private def configureDatasource(datasource: ComboPooledDataSource, isMaster: Boolean) {
-    datasource.setUser(configuration.username)
-    datasource.setPassword(configuration.password)
-    if (isMaster) {
-      datasource.setInitialPoolSize(configuration.initMasterPoolSize)
-      datasource.setMinPoolSize(configuration.initMasterPoolSize)
-      datasource.setMaxPoolSize(configuration.maxMasterPoolSize)
-    } else {
-      datasource.setInitialPoolSize(configuration.initSlavePoolSize)
-      datasource.setMinPoolSize(configuration.initSlavePoolSize)
-      datasource.setMaxPoolSize(configuration.maxSlavePoolSize)
-    }
-    datasource.setCheckoutTimeout(configuration.checkoutTimeoutMs)
-    datasource.setMaxIdleTime(configuration.maxIdleTimeSec)
-    datasource.setNumHelperThreads(configuration.numHelperThread)
-    datasource.setUnreturnedConnectionTimeout(configuration.maxQueryTimeInSec)
-  }
-
-  private def monitorSlave {
-    for (s <- slaves) {
-      var conn: Connection = null
-
-      val trySelect = Try {
-        val url = String.format(MYSQL_URL, s.name, configuration.database)
-        conn = s.driver.connect(url, databaseCredentials)
-        conn.prepareStatement("SELECT 1").executeQuery()
-        conn.close()
-      }
-
-      if (conn != null) Try(conn.close())
-
-      val wasAvailable = s.available
-      s.available = trySelect.isSuccess
-
-      trySelect match {
-        case Failure(e: Exception) => {
-          log.warn("Exception while executing monitoring query for %s on slave %s."
-            .format(configuration.dbname, s.name), e)
-          log.warn("Slave {} is down.", s.name)
-        }
-        case Success(_) if !wasAvailable =>
-          log.warn("Slave {} is up.", s.name)
-        case _ =>
-      }
-
-    }
-  }
-
-  private class Slave(val name: String, val datasource: ComboPooledDataSource, val driver: Driver) {
-    @volatile
-    var available = true
   }
 
   class DatabaseResult(results: ResultSet, statement: PreparedStatement, connection: Connection) {
@@ -570,21 +447,3 @@ object MySqlDatabaseAccessor extends Logging {
 
   private val SELECT_MAX_TRY = 3
 }
-
-case class MysqlDatabaseAccessorConfig(dbname: String,
-                                       username: String,
-                                       password: String,
-                                       serverNames: Seq[String],
-                                       database: String,
-                                       initMasterPoolSize: Int,
-                                       maxMasterPoolSize: Int,
-                                       initSlavePoolSize: Int,
-                                       maxSlavePoolSize: Int,
-                                       checkoutTimeoutMs: Int,
-                                       maxIdleTimeSec: Int,
-                                       slaveMonitoringEnabled: Boolean,
-                                       slaveMonitoringIntervalSec: Long,
-                                       numHelperThread: Int,
-                                       maxQueryTimeInSec: Int)
-
-
