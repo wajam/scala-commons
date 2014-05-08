@@ -52,6 +52,11 @@ class MySqlDatasourceAccessor(configuration: MysqlDatabaseAccessorConfig) extend
       configuration.slaveMonitoringIntervalSec, TimeUnit.SECONDS)
   }
 
+  def shutdown() {
+    masterDatasource.close()
+    slaves.foreach(_.datasource.close())
+  }
+
   private def configureDatasource(datasource: ComboPooledDataSource, isMaster: Boolean) {
     datasource.setUser(configuration.username)
     datasource.setPassword(configuration.password)

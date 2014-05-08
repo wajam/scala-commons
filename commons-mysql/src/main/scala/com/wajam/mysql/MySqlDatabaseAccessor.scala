@@ -39,8 +39,7 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
   }
 
   def shutdown() {
-    datasources.masterDatasource.close()
-    datasources.slaves.foreach(_.datasource.close())
+    datasources.shutdown()
   }
 
   private def innerSelect[T](sql: String, forWrite: Boolean, callback: (ResultSet) => Option[T], args: Any*): Option[T] = {
