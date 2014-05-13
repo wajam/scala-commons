@@ -10,7 +10,7 @@ import com.wajam.tracing.Traced
 import com.mchange.v2.c3p0.ComboPooledDataSource
 import com.yammer.metrics.scala.Instrumented
 
-class MySqlDatasourceAccessor(configuration: MysqlDatabaseAccessorConfig) extends Logging with Instrumented with Traced {
+class MysqlDatasourceAccessor(configuration: MysqlDatabaseAccessorConfig) extends Logging with Instrumented with Traced {
 
   private val MYSQL_URL: String = "jdbc:mysql://%s/%s?zeroDateTimeBehavior=convertToNull&characterEncoding=UTF-8"
   private val random = new Random

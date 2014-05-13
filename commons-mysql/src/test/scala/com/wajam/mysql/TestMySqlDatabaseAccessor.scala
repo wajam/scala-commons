@@ -9,7 +9,7 @@ class TestMySqlDatabaseAccessor extends FunSuite {
 
   test("should fail quickly if cannot connect to database") {
     val timeout = 100
-    val db = new MySqlDatabaseAccessor(new MysqlDatabaseAccessorConfig("name",
+    val db = new MysqlDatabaseAccessor(new MysqlDatabaseAccessorConfig("name",
       username = "test",
       password = "test",
       serverNames = Seq("fakeserver"),
