@@ -14,9 +14,9 @@ import scala.language.higherKinds
 /**
  * MySQL database access helper
  */
-class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends Logging with Instrumented with Traced {
+class MysqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends Logging with Instrumented with Traced {
 
-  private val datasources = new MySqlDatasourceAccessor(configuration)
+  private val datasources = new MysqlDatasourceAccessor(configuration)
 
   private lazy val metricSelect = tracedTimer(configuration.dbname + "-mysql-select")
   private lazy val metricInsert = tracedTimer(configuration.dbname + "-mysql-insert")
@@ -80,7 +80,7 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
     }
 
     this.metricSelect time {
-      trySelect(if (forWrite) 1 else MySqlDatabaseAccessor.SELECT_MAX_TRY)
+      trySelect(if (forWrite) 1 else MysqlDatabaseAccessor.SELECT_MAX_TRY)
     } match {
       case Success(res) => {
         try {
@@ -338,7 +338,7 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
   private def getConnection(readOnly: Boolean): Connection = {
 
     @tailrec
-    def testAndGetMasterConnection(retry: Int = MySqlDatabaseAccessor.SELECT_MAX_TRY): Connection = {
+    def testAndGetMasterConnection(retry: Int = MysqlDatabaseAccessor.SELECT_MAX_TRY): Connection = {
       var con: Connection = null
       var statement: PreparedStatement = null
       var rs: ResultSet = null
@@ -417,9 +417,9 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
   class DatabaseResult(results: ResultSet, statement: PreparedStatement, connection: Connection) {
 
     def close() {
-      MySqlDatabaseAccessor.close(results)
-      MySqlDatabaseAccessor.close(statement)
-      MySqlDatabaseAccessor.close(connection)
+      MysqlDatabaseAccessor.close(results)
+      MysqlDatabaseAccessor.close(statement)
+      MysqlDatabaseAccessor.close(connection)
     }
 
     def getResults: ResultSet = {
@@ -429,7 +429,7 @@ class MySqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
 
 }
 
-object MySqlDatabaseAccessor extends Logging {
+object MysqlDatabaseAccessor extends Logging {
   def close(closable: AutoCloseable) {
     try {
       if (closable != null) {
