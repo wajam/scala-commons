@@ -440,5 +440,16 @@ object MysqlDatabaseAccessor extends Logging {
     }
   }
 
+  class RsIterator(rs: ResultSet) extends Iterator[ResultSet] {
+
+    def hasNext: Boolean = !rs.isLast && !rs.isAfterLast
+
+    def next(): ResultSet = {
+      rs.next()
+      rs
+    }
+
+  }
+
   private val SELECT_MAX_TRY = 3
 }
