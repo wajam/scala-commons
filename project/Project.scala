@@ -81,6 +81,13 @@ object CommonsBuild extends Build {
     .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Test"))))
     .settings(parallelExecution in IntegrationTest := false)
 
+  lazy val script = Project("commons-script", file("commons-script"))
+    .configs(IntegrationTest)
+    .settings(defaultSettings: _*)
+    .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Test"))))
+    .settings(parallelExecution in IntegrationTest := false)
+    .dependsOn(core)
+
   lazy val tracing= Project("commons-tracing", file("commons-tracing"))
     .configs(IntegrationTest)
     .settings(defaultSettings: _*)

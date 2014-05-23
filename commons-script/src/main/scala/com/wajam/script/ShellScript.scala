@@ -1,6 +1,6 @@
-package com.wajam.commons.script
+package com.wajam.script
 
-import com.wajam.commons.script.Script.Executor
+import com.wajam.script.Script.Executor
 
 trait ShellScript { this: Script =>
 

@@ -1,4 +1,4 @@
-package com.wajam.commons.script
+package com.wajam.script
 
 import java.io.{ FileWriter, File }
 
