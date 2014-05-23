@@ -21,7 +21,8 @@ object CommonsBuild extends Build {
     "junit" % "junit" % "4.10" % "test, it",
     "org.scalatest" %% "scalatest" % "2.0" % "test, it",
     "org.mockito" % "mockito-core" % "1.9.0" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.10.1" % "test"
+    "org.scalacheck" %% "scalacheck" % "1.10.1" % "test",
+    "commons-io" % "commons-io" % "2.4"
   )
 
   val mysqlDeps = Seq(
