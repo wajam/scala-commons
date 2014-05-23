@@ -1,41 +1,46 @@
 package com.wajam.commons
 
-import java.io.{FileInputStream, BufferedInputStream, File}
+import java.io._
 import scala.io.Source._
 import com.wajam.commons.Closable._
-import org.apache.commons.io.{FileUtils => ApacheFileUtils}
 import scala.io.Source
 import java.util.zip.GZIPInputStream
 
 object FileUtils extends Logging {
 
-  def writeData(fileName: String, data: String, encoding: String = "UTF-8"): Boolean = {
-    writeSafe(fileName, encoding) { (file) =>
-      ApacheFileUtils.write(file, data, encoding, false)
+  def writeData(file: File, data: String): Boolean = {
+    writeSafe(file) { (writer) =>
+      writer.write(data)
     }
   }
 
-  def writeLines(fileName: String, lines: Iterable[String], encoding: String = "UTF-8"): Boolean = {
-    writeSafe(fileName, encoding) { (file) =>
-      import collection.JavaConversions._
-      ApacheFileUtils.writeLines(file, encoding, lines, false)
+  def writeLines(file: File, lines: Iterable[String]): Boolean = {
+    writeSafe(file) { (writer) =>
+      lines.foreach { line =>
+        writer.write(line)
+        writer.newLine()
+      }
     }
   }
 
   /**
    * Method that write into a temporary files, then moves it to replace to original for 'safe' write
-   * @param fileName path of the file to write to
-   * @param encoding file encoding; default UTF-8
-   * @param writeFn wrapped function taking File as a parameter that actually writes to the file
+   * @param file file to write to
+   * @param writeFn wrapped function taking BufferedWriter as a parameter that actually writes to the file
    * @return true if success, false otherwise
    */
-  private def writeSafe(fileName: String, encoding: String = "UTF-8")(writeFn: (File) => Unit): Boolean = {
-    val tmpFileName = s"$fileName.tmp"
+  private def writeSafe(file: File)(writeFn: (BufferedWriter) => Unit): Boolean = {
+    val tmpFileName = s"${file.getPath}.tmp"
     try {
       val tmpFile = new File(tmpFileName)
-      writeFn(tmpFile)
-      val status = tmpFile renameTo new File(fileName)
-      if (!status) error(s"The impossible happened: unable to rename $tmpFile to $fileName")
+
+      val writer = new BufferedWriter(new FileWriter(tmpFileName))
+      writeFn(writer)
+      writer.flush()
+      writer.close()
+
+      val status = tmpFile renameTo file
+      if (!status) error(s"The impossible happened: unable to rename $tmpFile to $file")
       status
     } catch {
       case e: Exception => {
@@ -45,20 +50,14 @@ object FileUtils extends Logging {
     }
   }
 
-  def readLines[T](fileName: String)(block: (Iterator[String]) => T): Option[T] = {
-    val file = new File(fileName)
-    if (file.exists()) {
-      val source = fromFile(file)
-      Some(readFromSource(source)(block))
-    } else None
+  def readLines[T](file: File)(readFn: (Iterator[String]) => T): T = {
+    val source = fromFile(file)
+    readFromSource(source)(readFn)
   }
 
-  def readLinesGzip[T](fileName: String)(block: (Iterator[String]) => T): Option[T] = {
-    val file = new File(fileName)
-    if (file.exists()) {
-      val source = Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(file))))
-      Some(readFromSource(source)(block))
-    } else None
+  def readLinesGzip[T](file: File)(readFn: (Iterator[String]) => T): T = {
+    val source = fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(file))))
+    readFromSource(source)(readFn)
   }
 
   private def readFromSource[T](s: Source)(block: (Iterator[String]) => T): T = {
