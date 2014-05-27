@@ -74,6 +74,7 @@ object CommonsBuild extends Build {
     .aggregate(caching)
     .aggregate(asyncclient)
     .aggregate(gearman)
+    .aggregate(script)
 
   lazy val core = Project("commons-core", file("commons-core"))
     .configs(IntegrationTest)
