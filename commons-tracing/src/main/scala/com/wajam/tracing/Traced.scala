@@ -57,11 +57,14 @@ class TracedTimer(val timer: Timer, val name: String, val source: Option[String]
 
     private val startTime: Long = optTracer.map(_.currentTimeGenerator.currentTime).getOrElse(0)
 
-    def stop(extra: Map[String, String] = Map()) {
+    def stop(extra: Map[String, String] = Map()): Option[Long] = {
       timerContext.stop()
-      for (tracer <- optTracer) {
+
+      optTracer.map { tracer =>
         val endTime: Long = tracer.currentTimeGenerator.currentTime
-        tracer.record(Message(content(extra), source), Some(endTime - startTime))
+        val totalTime = endTime - startTime
+        tracer.record(Message(content(extra), source), Some(totalTime))
+        totalTime
       }
     }
   }
