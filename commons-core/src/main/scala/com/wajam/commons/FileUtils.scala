@@ -5,6 +5,8 @@ import scala.io.Source._
 import com.wajam.commons.Closable._
 import scala.io.{Codec, Source}
 import java.util.zip.GZIPInputStream
+import java.security.AccessController
+import sun.security.action.GetPropertyAction
 
 object FileUtils extends Logging {
 
@@ -78,5 +80,8 @@ object FileUtils extends Logging {
 
     using(iteratorWithClosable)(block)
   }
+
+  // Code extracted from File.Java to determine the tmpdir on the system.
+  def getTmpDirectory: File = new File(AccessController.doPrivileged(new GetPropertyAction("java.io.tmpdir")))
 
 }
