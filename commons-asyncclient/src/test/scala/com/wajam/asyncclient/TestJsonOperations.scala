@@ -5,7 +5,7 @@ import org.scalatest.Matchers
 import org.json4s.JsonAST._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalacheck.Arbitrary
-import com.ning.http.client.Response
+import com.ning.http.client.{FluentCaseInsensitiveStringsMap, Response}
 import org.json4s.DefaultFormats
 import org.json4s.native.Serialization
 
@@ -39,8 +39,9 @@ with Matchers with GeneratorDrivenPropertyChecks with JsonOperations {
       val response = mock[Response]
       when(response.getStatusCode).thenReturn(code)
       when(response.getResponseBody).thenReturn(body)
+      when(response.getHeaders).thenReturn(new FluentCaseInsensitiveStringsMap())
 
-      convertTo(response) should be(JsonResponse(code, body))
+      convertTo(response) should be(JsonResponse(code, body, Headers(response)))
     })
   }
 

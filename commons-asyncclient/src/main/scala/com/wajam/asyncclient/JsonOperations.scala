@@ -8,6 +8,7 @@ import java.io.{ OutputStreamWriter, ByteArrayOutputStream }
 import org.json4s.{Extraction, Formats}
 import org.json4s.native.JsonMethods._
 import scala.util.Try
+import scala.collection.Iterable
 
 trait JsonOperations {
   jsonOperations =>
@@ -27,7 +28,7 @@ trait JsonOperations {
   }
 
   implicit object JsonResponseHandler extends ResponseHandler[JsonResponse] {
-    def to(value: Response): JsonResponse = JsonResponse(value.getStatusCode, as.String(value))
+    def to(value: Response): JsonResponse = JsonResponse(value.getStatusCode, as.String(value), Headers(value))
   }
 
   implicit object JsonDecomposer extends Decomposer[JValue] {
@@ -38,18 +39,28 @@ trait JsonOperations {
 
 }
 
-case class JsonResponse(code: Int, str: String)(implicit formats: Formats) extends ConvertableResponse[TypedJsonResponse] {
-  val json: Option[JValue] = Try(parse(str)).toOption
-
-  def as[A](implicit mf: Manifest[A]) = TypedJsonResponse[A](code, str, json)
+case class JsonResponse(code: Int, json: Option[JValue], headers: Headers)(implicit formats: Formats) extends ConvertableResponse[TypedJsonResponse] {
+  def as[A](implicit mf: Manifest[A]) = TypedJsonResponse[A](code, json, headers)
 }
 
-case class TypedJsonResponse[A](code: Int, str: String, json: Option[JValue])
-                               (implicit mf: Manifest[A], formats: Formats) {
-  val value: Option[A] = {
-    if (code >= 200 && code != 204 && (code < 300 || code == 409)) {
-      json.flatMap(j => Try(j.extract[A]).toOption)
-    } else None
+object JsonResponse {
+  def apply(code: Int, str: String, headers: Headers = Headers.Empty)(implicit formats: Formats): JsonResponse = {
+    val json: Option[JValue] = Try(parse(str)).toOption
+    new JsonResponse(code, json, headers)
+  }
+}
+
+case class TypedJsonResponse[A](code: Int, value: Option[A], headers: Headers)
+
+object TypedJsonResponse {
+  def apply[A](code: Int, json: Option[JValue], headers: Headers)(implicit mf: Manifest[A], formats: Formats): TypedJsonResponse[A] = {
+    val value: Option[A] = {
+      if (code >= 200 && code != 204 && (code < 300 || code == 409)) {
+        json.flatMap(j => Try(j.extract[A]).toOption)
+      } else None
+    }
+
+    new TypedJsonResponse(code, value, headers)
   }
 }
 
