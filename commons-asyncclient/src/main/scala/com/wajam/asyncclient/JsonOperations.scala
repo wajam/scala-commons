@@ -27,7 +27,7 @@ trait JsonOperations {
   }
 
   implicit object JsonResponseHandler extends ResponseHandler[JsonResponse] {
-    def to(value: Response): JsonResponse = JsonResponse(value.getStatusCode, as.String(value))
+    def to(value: Response): JsonResponse = JsonResponse(value.getStatusCode, as.String(value), Headers(value.getHeaders))
   }
 
   implicit object JsonDecomposer extends Decomposer[JValue] {
@@ -58,7 +58,7 @@ object TypedJsonResponse {
   }
 
   /**
-   * Simplified contructor for testing purposes
+   * Simplified constructor for testing purposes
    */
   def apply[A](code: Int, value: Option[A], headers: Headers = Headers.Empty): TypedJsonResponse[A] = {
     TypedJsonResponse(code, "", None, value, headers)

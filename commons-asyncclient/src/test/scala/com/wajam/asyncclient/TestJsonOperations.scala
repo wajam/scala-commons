@@ -41,7 +41,7 @@ with Matchers with GeneratorDrivenPropertyChecks with JsonOperations {
       when(response.getResponseBody).thenReturn(body)
       when(response.getHeaders).thenReturn(new FluentCaseInsensitiveStringsMap())
 
-      convertTo(response) should be(JsonResponse(code, body, Headers(response)))
+      convertTo(response) should be(JsonResponse(code, body, Headers(response.getHeaders)))
     })
   }
 

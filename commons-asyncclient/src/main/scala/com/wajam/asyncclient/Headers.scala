@@ -1,6 +1,6 @@
 package com.wajam.asyncclient
 
-import com.ning.http.client.{FluentCaseInsensitiveStringsMap, Response}
+import com.ning.http.client.FluentCaseInsensitiveStringsMap
 
 trait Headers {
   def getValue(key: String): Option[String]
@@ -11,22 +11,24 @@ trait Headers {
 }
 
 object Headers {
-  def apply(response: Response): Headers = ResponseHeaders(response.getHeaders)
+  def apply(headers: Map[String, String]): Headers = SimpleValueMapHeaders(headers)
 
-  def apply(headers: Map[String, String]) = new Headers {
-    def getValue(key: String): Option[String] = headers.get(key)
-
-    def getValues(key: String): Iterable[String] = headers.get(key).map(List(_)).getOrElse(Nil)
-
-    lazy val toMap: Map[String, Iterable[String]] = headers.map { case (k, v) => (k, List(v)) }
-  }
+  def apply(headers: FluentCaseInsensitiveStringsMap): Headers = ResponseHeaders(headers)
 
   val Empty = new Headers {
     def getValue(key: String): Option[String] = None
 
     def getValues(key: String): Iterable[String] = Nil
 
-    val toMap: Map[String, Iterable[String]] = Map.empty()
+    def toMap: Map[String, Iterable[String]] = Map.empty()
+  }
+
+  private case class SimpleValueMapHeaders(headers: Map[String, String]) extends Headers {
+    def getValue(key: String): Option[String] = headers.get(key)
+
+    def getValues(key: String): Iterable[String] = headers.get(key).map(List(_)).getOrElse(Nil)
+
+    lazy val toMap: Map[String, Iterable[String]] = headers.map { case (k, v) => (k, List(v)) }
   }
 
   private case class ResponseHeaders(headers: FluentCaseInsensitiveStringsMap) extends Headers {
