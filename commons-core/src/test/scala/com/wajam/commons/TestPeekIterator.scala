@@ -7,7 +7,6 @@ import org.scalatest.Matchers._
 import java.util.NoSuchElementException
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
-import com.wajam.commons.Closable
 
 @RunWith(classOf[JUnitRunner])
 class TestPeekIterator extends FlatSpec with MockitoSugar {

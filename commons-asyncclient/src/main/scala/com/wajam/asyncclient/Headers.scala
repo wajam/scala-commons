@@ -26,7 +26,7 @@ object Headers {
 
     def getValues(key: String): Iterable[String] = Nil
 
-    def toMap: Map[String, Iterable[String]] = Map.empty()
+    val toMap: Map[String, Iterable[String]] = Map.empty()
   }
 
   private case class ResponseHeaders(headers: FluentCaseInsensitiveStringsMap) extends Headers {
