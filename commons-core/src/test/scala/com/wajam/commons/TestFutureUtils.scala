@@ -1,11 +1,11 @@
 package com.wajam.commons
 
 import org.scalatest.FlatSpec
-import scala.concurrent.{ExecutionContext, Await, Future}
+import scala.concurrent.{ ExecutionContext, Await, Future }
 import scala.concurrent.duration.Duration
 import org.scalatest.Matchers
-import java.util.concurrent.{Executors, ConcurrentLinkedQueue}
-import scala.util.{Failure, Success, Try}
+import java.util.concurrent.{ Executors, ConcurrentLinkedQueue }
+import scala.util.{ Failure, Success, Try }
 
 class TestFutureUtils extends FlatSpec with Matchers {
   val numberToFailOn = 500
@@ -70,8 +70,7 @@ class TestFutureUtils extends FlatSpec with Matchers {
     }
   }
 
-  private def delayedFuture(recorder: ConcurrentLinkedQueue[Int], failOn: Option[Int] = None)
-                           (e: Int): Future[Int] = {
+  private def delayedFuture(recorder: ConcurrentLinkedQueue[Int], failOn: Option[Int] = None)(e: Int): Future[Int] = {
     Future {
       Thread.sleep(e)
       failOn.map {

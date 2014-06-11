@@ -3,7 +3,7 @@ package com.wajam.commons
 /**
  * Copied from DynamicVariable but do not inherit parent's thread value
  */
-class ThreadLocalVariable[T] (init: T) {
+class ThreadLocalVariable[T](init: T) {
   private val tl = new InheritableThreadLocal[T] {
 
     //child do not inherit parent thread value
@@ -15,12 +15,13 @@ class ThreadLocalVariable[T] (init: T) {
   /** Retrieve the current value */
   def value: T = tl.get.asInstanceOf[T]
 
-  /** Set the value of the variable while executing the specified
-    * thunk.
-    *
-    * @param newval The value to which to set the variable
-    * @param thunk The code to evaluate under the new setting
-    */
+  /**
+   * Set the value of the variable while executing the specified
+   * thunk.
+   *
+   * @param newval The value to which to set the variable
+   * @param thunk The code to evaluate under the new setting
+   */
   def withValue[S](newval: T)(thunk: => S): S = {
     val oldval = value
     tl set newval
@@ -29,9 +30,10 @@ class ThreadLocalVariable[T] (init: T) {
     finally tl set oldval
   }
 
-  /** Change the currently bound value, discarding the old value.
-    * Usually withValue() gives better semantics.
-    */
+  /**
+   * Change the currently bound value, discarding the old value.
+   * Usually withValue() gives better semantics.
+   */
   def value_=(newval: T) = tl set newval
 
   override def toString: String = "DynamicVariable(" + value + ")"

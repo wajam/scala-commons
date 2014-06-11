@@ -39,7 +39,7 @@ object CommonsBuild extends Build {
     "io.netty" % "netty" % "3.5.0.Final",
     "org.json4s" %% "json4s-native" % "3.2.5",
     "com.twitter" %% "util-core" % "6.1.0",
-    "org.ccil.cowan.tagsoup" % "tagsoup" % "1.2" % "it"
+    "org.ccil.cowan.tagsoup" % "tagsoup" % "1.2" % "test, it"
   )
 
   val gearmanDeps = Seq(
@@ -52,7 +52,7 @@ object CommonsBuild extends Build {
       .setPreference(DoubleIndentClassDeclaration, true)
     }
 
-  val defaultSettings = Defaults.defaultSettings ++ Defaults.itSettings ++ Seq(
+  val defaultSettings = Defaults.defaultSettings ++ Defaults.itSettings ++ scalariformSettings ++ Seq(
     libraryDependencies ++= commonDeps,
     resolvers ++= commonResolvers,
     retrieveManaged := true,

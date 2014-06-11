@@ -1,18 +1,17 @@
 package com.wajam.gearman.impl
 
 import java.net.InetSocketAddress
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{ ExecutionContext, Future, Promise }
 import com.wajam.commons.Logging
 import org.gearman.core.GearmanConstants
-import org.gearman.{GearmanBackgroundJob, GearmanJobResult, GearmanJob, Gearman}
-import org.gearman.GearmanClient.{SubmitCallbackResult, GearmanSubmitHandler}
+import org.gearman.{ GearmanBackgroundJob, GearmanJobResult, GearmanJob, Gearman }
+import org.gearman.GearmanClient.{ SubmitCallbackResult, GearmanSubmitHandler }
 import org.gearman.GearmanJob.Priority
-import com.wajam.gearman.exception.{JobExecutionException, JobSubmissionException}
-import scala.util.{Failure, Success}
+import com.wajam.gearman.exception.{ JobExecutionException, JobSubmissionException }
+import scala.util.{ Failure, Success }
 import com.wajam.gearman.GearmanClient
 import com.wajam.gearman.utils.GearmanJson
 import com.wajam.tracing.Traced
-
 
 class AsyncGearmanClient(serverAddress: Seq[String]) extends GearmanClient with Logging with Traced {
 
@@ -44,7 +43,7 @@ class AsyncGearmanClient(serverAddress: Seq[String]) extends GearmanClient with 
       }
     }
     val jobCompletedFuture = jobCompletedPromise.future
-    jobCompletedFuture.onComplete( _ => jobCompletedTimerContext.foreach(_.stop()))
+    jobCompletedFuture.onComplete(_ => jobCompletedTimerContext.foreach(_.stop()))
     jobCompletedFuture
   }
 

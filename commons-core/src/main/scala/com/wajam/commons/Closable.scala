@@ -9,7 +9,7 @@ trait Closable {
 
 object Closable {
 
-  implicit def withClose2Closable[A <: {def close() : Unit}](withClose: A): Closable = {
+  implicit def withClose2Closable[A <: { def close(): Unit }](withClose: A): Closable = {
     new Closable {
       def close() = withClose.close()
     }

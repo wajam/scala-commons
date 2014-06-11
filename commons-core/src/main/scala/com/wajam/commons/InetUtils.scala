@@ -1,6 +1,6 @@
 package com.wajam.commons
 
-import java.net.{Inet4Address, NetworkInterface, InetAddress}
+import java.net.{ Inet4Address, NetworkInterface, InetAddress }
 
 /**
  * Internet Protocol utilities

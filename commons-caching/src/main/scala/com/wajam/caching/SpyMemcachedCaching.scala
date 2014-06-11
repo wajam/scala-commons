@@ -2,15 +2,15 @@ package com.wajam.caching
 
 import java.net.InetSocketAddress
 import com.wajam.commons.Logging
-import net.spy.memcached.{DefaultConnectionFactory, MemcachedClient}
-import scala.concurrent.{ExecutionContext, future}
+import net.spy.memcached.{ DefaultConnectionFactory, MemcachedClient }
+import scala.concurrent.{ ExecutionContext, future }
 import com.yammer.metrics.scala.Instrumented
 import scala.collection.JavaConversions._
 import java.util.concurrent.TimeUnit
 import com.wajam.tracing.Traced
 
 class SpyMemcachedCaching(configuration: SpyMemcachedConfiguration)(implicit ec: ExecutionContext)
-  extends CachingService with Logging with Instrumented with Traced {
+    extends CachingService with Logging with Instrumented with Traced {
 
   private val addrs = configuration.servers.map {
     address => new InetSocketAddress(address, configuration.port)

@@ -1,16 +1,16 @@
 package com.wajam.asyncclient
 
-import org.scalatest.{Matchers, FunSuite}
+import org.scalatest.{ Matchers, FunSuite }
 import org.scalatest.Matchers
 import org.json4s.JsonAST._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalacheck.Arbitrary
-import com.ning.http.client.{FluentCaseInsensitiveStringsMap, Response}
+import com.ning.http.client.{ FluentCaseInsensitiveStringsMap, Response }
 import org.json4s.DefaultFormats
 import org.json4s.native.Serialization
 
 class TestJsonOperations extends FunSuite
-with Matchers with GeneratorDrivenPropertyChecks with JsonOperations {
+    with Matchers with GeneratorDrivenPropertyChecks with JsonOperations {
 
   protected def charset = "UTF-8"
 
@@ -73,7 +73,7 @@ object TestJsonOperations {
 
   def genArray: Gen[JValue] = genList map JArray
 
-  def genObject: Gen[JObject] = genFieldList map {x => JObject(x)}
+  def genObject: Gen[JObject] = genFieldList map { x => JObject(x) }
 
   def genList = Gen.containerOfN[List, JValue](listSize, genJValue)
 

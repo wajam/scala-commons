@@ -25,7 +25,6 @@ class TestMySqlDatabaseAccessor extends FunSuite {
       numHelperThread = 1,
       maxQueryTimeInSec = 0))
 
-
     val s = System.currentTimeMillis
     intercept[SQLException] {
       db.executeSelect("Select 1=1", (_) => fail("Callback called"))

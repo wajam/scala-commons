@@ -1,6 +1,5 @@
 package com.wajam.commons
 
-
 /**
  * Trait that prevent logging. Usefull to prevent logging in a class without removing the logging calls. Preferably
  * used only in test classes.

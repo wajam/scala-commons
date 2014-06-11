@@ -2,8 +2,8 @@ package com.wajam.tracing
 
 import org.scalatest.FunSuite
 import org.scalatest.Matchers._
-import java.util.{TimeZone, Calendar}
-import java.net.{InetAddress, InetSocketAddress}
+import java.util.{ TimeZone, Calendar }
+import java.net.{ InetAddress, InetSocketAddress }
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import com.wajam.commons.InetUtils
@@ -29,7 +29,7 @@ class TestTraceRecordFormatter extends FunSuite {
     val record = new Record(context, time.getTimeInMillis, annotation)
 
     val actual = TraceRecordFormatter.record2TabSeparatedString(record)
-    actual should be (expected)
+    actual should be(expected)
   }
 
   test("ServRecv without parent should be properly formatted") {
@@ -40,7 +40,7 @@ class TestTraceRecordFormatter extends FunSuite {
     val record = new Record(context, time.getTimeInMillis, annotation)
 
     val actual = TraceRecordFormatter.record2TabSeparatedString(record)
-    actual should be (expected)
+    actual should be(expected)
   }
 
   test("ServRecv with empty rpc name should be properly formatted") {
@@ -51,7 +51,7 @@ class TestTraceRecordFormatter extends FunSuite {
     val record = new Record(context, time.getTimeInMillis, annotation)
 
     val actual = TraceRecordFormatter.record2TabSeparatedString(record)
-    actual should be (expected)
+    actual should be(expected)
   }
 
   test("ClientSend should be properly formatted") {
@@ -62,7 +62,7 @@ class TestTraceRecordFormatter extends FunSuite {
     val record = new Record(context, time.getTimeInMillis, annotation)
 
     val actual = TraceRecordFormatter.record2TabSeparatedString(record)
-    actual should be (expected)
+    actual should be(expected)
   }
 
   test("ClientRecv should be properly formatted") {
@@ -73,7 +73,7 @@ class TestTraceRecordFormatter extends FunSuite {
     val record = new Record(context, time.getTimeInMillis, annotation)
 
     val actual = TraceRecordFormatter.record2TabSeparatedString(record)
-    actual should be (expected)
+    actual should be(expected)
   }
 
   test("ServerSend should be properly formatted") {
@@ -84,7 +84,7 @@ class TestTraceRecordFormatter extends FunSuite {
     val record = new Record(context, time.getTimeInMillis, annotation)
 
     val actual = TraceRecordFormatter.record2TabSeparatedString(record)
-    actual should be (expected)
+    actual should be(expected)
   }
 
   test("ServerSend without response code should be properly formatted") {
@@ -95,7 +95,7 @@ class TestTraceRecordFormatter extends FunSuite {
     val record = new Record(context, time.getTimeInMillis, annotation)
 
     val actual = TraceRecordFormatter.record2TabSeparatedString(record)
-    actual should be (expected)
+    actual should be(expected)
   }
 
   test("Message should be properly formatted") {
@@ -106,7 +106,7 @@ class TestTraceRecordFormatter extends FunSuite {
     val record = new Record(context, time.getTimeInMillis, annotation)
 
     val actual = TraceRecordFormatter.record2TabSeparatedString(record)
-    actual should be (expected)
+    actual should be(expected)
   }
 
   test("Message with a source should be properly formatted") {
@@ -117,7 +117,7 @@ class TestTraceRecordFormatter extends FunSuite {
     val record = new Record(context, time.getTimeInMillis, annotation)
 
     val actual = TraceRecordFormatter.record2TabSeparatedString(record)
-    actual should be (expected)
+    actual should be(expected)
   }
 
   test("Message with duration should be properly formatted") {
@@ -128,7 +128,7 @@ class TestTraceRecordFormatter extends FunSuite {
     val record = new Record(context, time.getTimeInMillis, annotation, Some(1234))
 
     val actual = TraceRecordFormatter.record2TabSeparatedString(record)
-    actual should be (expected)
+    actual should be(expected)
   }
 
   test("Message with tab should be properly escaped") {
@@ -139,7 +139,7 @@ class TestTraceRecordFormatter extends FunSuite {
     val record = new Record(context, time.getTimeInMillis, annotation)
 
     val actual = TraceRecordFormatter.record2TabSeparatedString(record)
-    actual should be (expected)
+    actual should be(expected)
   }
 
   test("ClientAddress should be properly formatted") {

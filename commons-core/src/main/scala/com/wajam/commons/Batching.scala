@@ -10,8 +10,7 @@ object Batching {
     else toProcess.grouped(batchSize)
   }
 
-  def batchCall[I, O](toProcess: Seq[I], batchSize: Int)
-                     (batchCall: Seq[I] => O): Iterator[O] = {
+  def batchCall[I, O](toProcess: Seq[I], batchSize: Int)(batchCall: Seq[I] => O): Iterator[O] = {
     splitBatch(toProcess, batchSize) map batchCall
   }
 
