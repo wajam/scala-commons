@@ -1,8 +1,8 @@
 package com.wajam.tracing
 
-import com.yammer.metrics.core.{TimerContext, MetricName}
+import com.yammer.metrics.core.{ TimerContext, MetricName }
 import java.util.concurrent.TimeUnit
-import com.yammer.metrics.scala.{Instrumented, Timer}
+import com.yammer.metrics.scala.{ Instrumented, Timer }
 import Annotation.Message
 
 /**
@@ -73,7 +73,7 @@ class TracedTimer(val timer: Timer, val name: String, val source: Option[String]
     if (extra.isEmpty) {
       name
     } else {
-      s"$name ${extra.map { case (k, v) => s"$k=$v"}.mkString("[", ",", "]")}"
+      s"$name ${extra.map { case (k, v) => s"$k=$v" }.mkString("[", ",", "]")}"
     }
   }
 }

@@ -2,7 +2,7 @@ package com.wajam.tracing
 
 import java.text.SimpleDateFormat
 import java.net.InetSocketAddress
-import com.wajam.commons.{ThreadLocalVariable, CurrentTime, IdGenerator, UuidStringGenerator}
+import com.wajam.commons.{ ThreadLocalVariable, CurrentTime, IdGenerator, UuidStringGenerator }
 import com.wajam.tracing.Annotation.Message
 
 /**
@@ -84,7 +84,7 @@ class Tracer(recorder: TraceRecorder = NullTraceRecorder,
 
   def isSampled(traceId: String): Option[Boolean] = {
     traceId.hashCode % samplingRate == 0 match {
-      case true  => Some(true)
+      case true => Some(true)
       case false => None
     }
   }
@@ -147,7 +147,7 @@ class Tracer(recorder: TraceRecorder = NullTraceRecorder,
   def record(record: Record) {
     record.context.sampled match {
       case Some(true) => recorder.record(record)
-      case _          =>
+      case _ =>
     }
   }
 

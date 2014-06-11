@@ -1,6 +1,6 @@
 package com.wajam.gearman
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait GearmanClient {
 

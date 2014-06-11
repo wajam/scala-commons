@@ -2,7 +2,7 @@ package com.wajam.commons
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{Matchers, FunSuite}
+import org.scalatest.{ Matchers, FunSuite }
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import java.io.IOException
@@ -13,7 +13,7 @@ class TestClosable extends FunSuite with MockitoSugar with Matchers {
     val mockClosable = mock[Closable]
 
     import Closable.using
-    using(mockClosable) { closable =>  }
+    using(mockClosable) { closable => }
 
     verify(mockClosable).close()
   }
@@ -38,7 +38,7 @@ class TestClosable extends FunSuite with MockitoSugar with Matchers {
     val mockNotClosableWithClose = mock[NotClosableWithClose]
 
     import Closable._
-    using(mockNotClosableWithClose) { closable =>  }
+    using(mockNotClosableWithClose) { closable => }
 
     verify(mockNotClosableWithClose).close()
   }

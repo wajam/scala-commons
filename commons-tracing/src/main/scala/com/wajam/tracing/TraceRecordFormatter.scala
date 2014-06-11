@@ -38,8 +38,7 @@ object TraceRecordFormatter {
     classOf[Annotation.ClientSend] -> "ClientSend", classOf[Annotation.ClientRecv] -> "ClientRecv",
     classOf[Annotation.ServerSend] -> "ServerSend", classOf[Annotation.ServerRecv] -> "ServerRecv",
     classOf[Annotation.ClientAddress] -> "ClientAddress", classOf[Annotation.ServerAddress] -> "ServerAddress",
-    classOf[Annotation.Message] -> "Message"
-  )
+    classOf[Annotation.Message] -> "Message")
 
   /**
    * Returns a tab delimited string representation of the specified record.
@@ -154,7 +153,7 @@ object TraceRecordFormatter {
      */
     private def annotation2MessageComponents(annotation: Annotation, msgEscaper: (String) => String): (String, Option[String]) = {
       annotation match {
-        case msg: Annotation.Message  =>
+        case msg: Annotation.Message =>
           (msgEscaper(msg.content), msg.source)
         case _ =>
           ("", None)

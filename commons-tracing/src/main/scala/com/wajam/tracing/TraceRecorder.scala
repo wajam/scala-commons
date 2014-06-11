@@ -38,5 +38,3 @@ object ConsoleTraceRecorder extends TraceRecorder {
   }
 }
 
-
-

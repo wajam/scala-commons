@@ -4,7 +4,7 @@ import com.wajam.commons.Logging
 import java.sql._
 import collection.mutable.ArrayBuffer
 import com.yammer.metrics.scala.Instrumented
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 import scala.collection.generic.CanBuildFrom
 import com.wajam.tracing.Traced
 import scala.annotation.tailrec
@@ -29,8 +29,7 @@ class MysqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
     innerSelect[A](sql, false, callback, args: _*)
   }
 
-  def executeSelectList[A, S[T] <: Seq[T]](sql: String, callback: (ResultSet) => Option[S[A]], args: Any*)
-                                          (implicit cbf: CanBuildFrom[Nothing, A, S[A]]): S[A] = {
+  def executeSelectList[A, S[T] <: Seq[T]](sql: String, callback: (ResultSet) => Option[S[A]], args: Any*)(implicit cbf: CanBuildFrom[Nothing, A, S[A]]): S[A] = {
     executeSelect[S[A]](sql, callback, args: _*).getOrElse(Seq[A]().to[S])
   }
 
@@ -178,7 +177,6 @@ class MysqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
 
   }
 
-
   def insert(table: String, keys: Map[String, Any]) = {
 
     val query = new StringBuilder("INSERT INTO `")
@@ -205,7 +203,6 @@ class MysqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
       case _ => query.append(" WHERE " + id._1 + "=" + id._2)
     }
 
-
     val args = convertBooleanValues(keys)
 
     executeUpdate(query.toString(), args: _*)
@@ -220,10 +217,11 @@ class MysqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
     withoutId.keySet.foreach(query.append(_).append("=?,"))
     query.setLength(query.length - 1)
     query.append(" WHERE " + id.map {
-      e => e._2 match {
-        case s: String => e._1 + " = '" + s + "'"
-        case _ => e._1 + " = " + e._2
-      }
+      e =>
+        e._2 match {
+          case s: String => e._1 + " = '" + s + "'"
+          case _ => e._1 + " = " + e._2
+        }
     }.mkString(" AND "))
 
     val args = convertBooleanValues(keys)
@@ -271,8 +269,7 @@ class MysqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
                                            customFilters: Seq[(String, String, String)],
                                            order: Option[(String, Boolean)],
                                            callback: (ResultSet) => Option[S[A]],
-                                           args: Any*)
-                                          (implicit cbf: CanBuildFrom[Nothing, A, S[A]]): S[A] = {
+                                           args: Any*)(implicit cbf: CanBuildFrom[Nothing, A, S[A]]): S[A] = {
     var filtersJoin = if (hasWhereClause) " AND " else " WHERE "
     val query = new StringBuilder(baseSelect)
     var newArgs = ArrayBuffer[Any]()
@@ -306,8 +303,7 @@ class MysqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
                               customFilters: Seq[(String, String, String)],
                               order: Option[(String, Boolean)],
                               callback: (ResultSet) => Option[S[A]],
-                              args: Any*)
-                             (implicit cbf: CanBuildFrom[Nothing, A, S[A]]): S[A] = {
+                              args: Any*)(implicit cbf: CanBuildFrom[Nothing, A, S[A]]): S[A] = {
     innerList(baseSelect, hasWhereClause, customFilters, order, callback, args: _*)
   }
 
@@ -377,10 +373,10 @@ class MysqlDatabaseAccessor(configuration: MysqlDatabaseAccessorConfig) extends 
         conn
       } else {
         if (datasources.hasSlaves)
-        // Slave are down, stop here to prevent master flooding.
+          // Slave are down, stop here to prevent master flooding.
           throw new SQLException("All slave are down, impossible to execute statement")
         else
-        // Fall back to master since it's our single server.
+          // Fall back to master since it's our single server.
           getMasterConnection
       }
     } else {

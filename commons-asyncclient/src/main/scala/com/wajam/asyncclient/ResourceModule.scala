@@ -1,8 +1,8 @@
 package com.wajam.asyncclient
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.language.higherKinds
-import com.wajam.tracing.{TracedTimer, Traced}
+import com.wajam.tracing.{ TracedTimer, Traced }
 import scala.util.Success
 import com.ning.http.client.Response
 
@@ -23,7 +23,7 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
       case Success((extra, _)) => context.stop(extra)
       case _ => context.stop()
     }
-    actionFuture.map { case (_, value) => value}
+    actionFuture.map { case (_, value) => value }
   }
 
   trait Resource {

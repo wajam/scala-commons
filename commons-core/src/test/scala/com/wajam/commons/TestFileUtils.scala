@@ -1,6 +1,6 @@
 package com.wajam.commons
 
-import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
+import org.scalatest.{ BeforeAndAfter, FunSuite, Matchers }
 import org.scalatest.mock.MockitoSugar
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner

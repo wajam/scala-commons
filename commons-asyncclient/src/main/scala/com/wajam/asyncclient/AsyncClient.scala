@@ -1,6 +1,6 @@
 package com.wajam.asyncclient
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 import dispatch._
 import com.ning.http.client
 import scala.language.implicitConversions
@@ -8,23 +8,19 @@ import java.util.concurrent.ExecutionException
 
 trait BaseAsyncClient {
 
-  def get[Response](request: Request)
-                   (implicit handler: ResponseHandler[Response],
-                    ec: ExecutionContext): Future[Response]
+  def get[Response](request: Request)(implicit handler: ResponseHandler[Response],
+                                      ec: ExecutionContext): Future[Response]
 
-  def post[RequestBody, Response](request: Request, value: RequestBody)
-                                 (implicit requestHandler: RequestHandler[RequestBody],
-                                  responseHandler: ResponseHandler[Response],
-                                  ec: ExecutionContext): Future[Response]
+  def post[RequestBody, Response](request: Request, value: RequestBody)(implicit requestHandler: RequestHandler[RequestBody],
+                                                                        responseHandler: ResponseHandler[Response],
+                                                                        ec: ExecutionContext): Future[Response]
 
-  def put[RequestBody, Response](request: Request, value: RequestBody)
-                                (implicit requestHandler: RequestHandler[RequestBody],
-                                 responseHandler: ResponseHandler[Response],
-                                 ec: ExecutionContext): Future[Response]
+  def put[RequestBody, Response](request: Request, value: RequestBody)(implicit requestHandler: RequestHandler[RequestBody],
+                                                                       responseHandler: ResponseHandler[Response],
+                                                                       ec: ExecutionContext): Future[Response]
 
-  def delete[Response](request: Request)
-                      (implicit handler: ResponseHandler[Response],
-                       ec: ExecutionContext): Future[Response]
+  def delete[Response](request: Request)(implicit handler: ResponseHandler[Response],
+                                         ec: ExecutionContext): Future[Response]
 }
 
 // --To build using an host
@@ -76,8 +72,7 @@ class AsyncClient(config: BaseHttpClientConfig, name: String) extends BaseAsyncC
     setRequestTimeoutInMs(config.requestTimeoutInMs).
     setMaximumConnectionsPerHost(config.maximumConnectionsPerHost).
     setMaximumConnectionsTotal(config.maximumConnectionsTotal).
-    setCompressionEnabled(config.compressionEnabled)
-  )
+    setCompressionEnabled(config.compressionEnabled))
 
   private def setBody[RequestBody](req: Req, value: RequestBody,
                                    handler: RequestHandler[RequestBody]): Req = {
@@ -92,32 +87,28 @@ class AsyncClient(config: BaseHttpClientConfig, name: String) extends BaseAsyncC
     }
   }
 
-  def get[Response](request: Request)
-                   (implicit handler: ResponseHandler[Response],
-                    ec: ExecutionContext): Future[Response] = {
+  def get[Response](request: Request)(implicit handler: ResponseHandler[Response],
+                                      ec: ExecutionContext): Future[Response] = {
     httpClient(request.inner > (v => handler.to(v))).
       recover(transformException("GET", request))
   }
 
-  def post[RequestBody, Response](request: Request, value: RequestBody)
-                                 (implicit requestHandler: RequestHandler[RequestBody],
-                                  responseHandler: ResponseHandler[Response],
-                                  ec: ExecutionContext): Future[Response] = {
+  def post[RequestBody, Response](request: Request, value: RequestBody)(implicit requestHandler: RequestHandler[RequestBody],
+                                                                        responseHandler: ResponseHandler[Response],
+                                                                        ec: ExecutionContext): Future[Response] = {
     httpClient(setBody(request.inner.POST, value, requestHandler) > (v => responseHandler.to(v))).
       recover(transformException("POST", request))
   }
 
-  def put[RequestBody, Response](request: Request, value: RequestBody)
-                                (implicit requestHandler: RequestHandler[RequestBody],
-                                 responseHandler: ResponseHandler[Response],
-                                 ec: ExecutionContext): Future[Response] = {
+  def put[RequestBody, Response](request: Request, value: RequestBody)(implicit requestHandler: RequestHandler[RequestBody],
+                                                                       responseHandler: ResponseHandler[Response],
+                                                                       ec: ExecutionContext): Future[Response] = {
     httpClient(setBody(request.inner.PUT, value, requestHandler) > (v => responseHandler.to(v))).
       recover(transformException("PUT", request))
   }
 
-  def delete[Response](request: Request)
-                      (implicit handler: ResponseHandler[Response],
-                       ec: ExecutionContext): Future[Response] = {
+  def delete[Response](request: Request)(implicit handler: ResponseHandler[Response],
+                                         ec: ExecutionContext): Future[Response] = {
     httpClient(request.inner.DELETE > (v => handler.to(v))).
       recover(transformException("DELETE", request))
   }
@@ -139,7 +130,7 @@ object AsyncClient {
 
     def params(paramList: Map[String, String]) = RequestImpl(inner <<? paramList)
 
-    def auth(username: String, password: String) = RequestImpl(inner as(username, password))
+    def auth(username: String, password: String) = RequestImpl(inner as (username, password))
 
     override def toString(): String = inner.toRequest.getUrl
   }

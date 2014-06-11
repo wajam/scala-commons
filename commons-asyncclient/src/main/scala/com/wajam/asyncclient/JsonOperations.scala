@@ -47,8 +47,7 @@ case class JsonResponse(code: Int, str: String, headers: Headers = Headers.Empty
 case class TypedJsonResponse[A](code: Int, str: String, json: Option[JValue], value: Option[A], headers: Headers)
 
 object TypedJsonResponse {
-  def apply[A](code: Int, str: String, json: Option[JValue], headers: Headers)
-              (implicit mf: Manifest[A], formats: Formats): TypedJsonResponse[A] = {
+  def apply[A](code: Int, str: String, json: Option[JValue], headers: Headers)(implicit mf: Manifest[A], formats: Formats): TypedJsonResponse[A] = {
     val value: Option[A] = {
       if (code >= 200 && code != 204 && (code < 300 || code == 409)) {
         json.flatMap(j => Try(j.extract[A]).toOption)

@@ -1,6 +1,6 @@
 package com.wajam.tracing
 
-import org.scalatest.{BeforeAndAfter, FunSuite}
+import org.scalatest.{ BeforeAndAfter, FunSuite }
 import org.scalatest.Matchers._
 import com.wajam.tracing.Annotation.Message
 import org.scalatest.mock.MockitoSugar
@@ -160,7 +160,7 @@ class TestTraced extends FunSuite with BeforeAndAfter with MockitoSugar {
 
     yammerTimer.min should be > (0.0)
     verify(mockRecorder).record(Record(context.get, time.currentTime, message, Some(duration)))
-    yammerTimer.min should be (endTime)
+    yammerTimer.min should be(endTime)
   }
 
   test("TracedTimer.timerContext should trace and use timerContext from Metrics with extra") {
@@ -187,7 +187,7 @@ class TestTraced extends FunSuite with BeforeAndAfter with MockitoSugar {
 
     yammerTimer.min should be > (0.0)
     verify(mockRecorder).record(Record(context.get, time.currentTime, message, Some(duration)))
-    yammerTimer.min should be (endTime)
+    yammerTimer.min should be(endTime)
   }
 
   test("TracedTimer.timerContext should update timer without error outside a tracing context") {
@@ -209,6 +209,6 @@ class TestTraced extends FunSuite with BeforeAndAfter with MockitoSugar {
 
     yammerTimer.min should be > (0.0)
     verifyZeroInteractions(mockRecorder)
-    yammerTimer.min should be (endTime)
+    yammerTimer.min should be(endTime)
   }
 }

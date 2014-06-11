@@ -2,9 +2,9 @@ package com.wajam.mysql
 
 import java.util
 import java.sql._
-import java.util.concurrent.{TimeUnit, ScheduledThreadPoolExecutor}
+import java.util.concurrent.{ TimeUnit, ScheduledThreadPoolExecutor }
 import javax.sql.DataSource
-import scala.util.{Failure, Success, Try, Random}
+import scala.util.{ Failure, Success, Try, Random }
 import com.wajam.commons.Logging
 import com.wajam.tracing.Traced
 import com.mchange.v2.c3p0.ComboPooledDataSource

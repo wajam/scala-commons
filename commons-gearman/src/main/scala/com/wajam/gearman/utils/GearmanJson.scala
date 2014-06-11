@@ -1,6 +1,6 @@
 package com.wajam.gearman.utils
 
-import java.io.{InputStreamReader, ByteArrayInputStream, OutputStreamWriter, ByteArrayOutputStream}
+import java.io.{ InputStreamReader, ByteArrayInputStream, OutputStreamWriter, ByteArrayOutputStream }
 
 object GearmanJson {
 

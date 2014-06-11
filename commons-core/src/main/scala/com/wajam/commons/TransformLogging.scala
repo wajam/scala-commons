@@ -1,6 +1,5 @@
 package com.wajam.commons
 
-
 /**
  * Trait that add log message transformation capability to logging
  */
