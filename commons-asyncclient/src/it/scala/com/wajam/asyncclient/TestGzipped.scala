@@ -13,15 +13,10 @@ class TestGzipped extends FlatSpec with Matchers with JsonOperations {
     val c = new AsyncClient(HttpClientConfig(compressionEnabled = true))
     val r = Await.result(c.get(AsyncClient.url("http://httpbin.org/gzip")), Duration.Inf)
 
-    r.json match {
-      case Some(j) => {
-        for {
-          JObject(json) <- j
-          JField("gzipped", JBool(gzipped)) <- json
-        } gzipped should be(true)
-      }
-      case None => fail(s"json undefined: ${r.str}")
-    }
+    for {
+      JObject(json) <- r.json.get
+      JField("gzipped", JBool(gzipped)) <- json
+    } gzipped should be(true)
   }
 
   protected def charset: String = "utf-8"
