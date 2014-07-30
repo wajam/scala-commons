@@ -9,12 +9,11 @@ import scala.util.Random
  */
 class WeightedItemsSelector[T](weightedItems: Iterable[(Double, T)])(implicit random: Random = Random) {
 
-  private val (distributedMap, total) = weightedItems.foldLeft((new java.util.TreeMap[Double, T], 0.0))((acc, entry) => {
-    val (map, tot) = acc
-    val (weight, item) = entry
-    map.put(tot + weight, item)
-    (map, tot + weight)
-  })
+  private val (distributedMap, total) = weightedItems.foldLeft((new java.util.TreeMap[Double, T], 0.0)) {
+    case ((map, tot), (weight, item)) =>
+      map.put(tot + weight, item)
+      (map, tot + weight)
+  }
 
   /**
    * Select next item T randomly

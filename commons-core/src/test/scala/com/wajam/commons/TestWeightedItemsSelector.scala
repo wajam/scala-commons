@@ -24,4 +24,20 @@ with Matchers {
     grouped("c").size should be(22)
   }
 
+  it should "work with fractional weights" in {
+
+    val fields = List((0.5, "a"), (1.5, "b"), (0.5, "c"))
+
+    val selector = new WeightedItemsSelector[String](fields)
+
+    val selected = for (i <- 1 to 100) yield selector.next
+
+    val grouped = selected.groupBy(name => name)
+
+    grouped("a").size should be(21)
+    grouped("b").size should be(57)
+    grouped("c").size should be(22)
+  }
+
+
 }
