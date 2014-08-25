@@ -1,6 +1,6 @@
 package com.wajam.commons
 
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * Trait for creating identifier.
@@ -14,7 +14,7 @@ trait IdGenerator[T] {
  * IE: From a web service (http call)
  */
 trait AsyncIdGenerator[T] {
-  def nextId: Future[T]
+  def nextId(implicit ec: ExecutionContext): Future[T]
 }
 
 /**
