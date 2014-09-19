@@ -7,6 +7,7 @@ package com.wajam.commons
  * subject to change, and may result in changes to the new iterator as well.
  */
 class PeekIterator[T](itr: Iterator[T]) extends Iterator[T] {
+  self =>
 
   private var nextElem: Option[T] = getNextElem()
 
@@ -20,6 +21,15 @@ class PeekIterator[T](itr: Iterator[T]) extends Iterator[T] {
     val value = nextElem
     nextElem = getNextElem()
     value.get
+  }
+
+  /* Unlike takeWhile, this implementation leaves the original iterator safe to use,
+     although it will lack all the elements returned here – but nothing else */
+  def listWhile(p: (T) => Boolean): List[T] = {
+    new Iterator[T] {
+      def hasNext = self.hasNext && p(self.peek)
+      def next() = if (p(self.peek)) self.next() else None.get
+    }.toList
   }
 
   private def getNextElem(): Option[T] = {
