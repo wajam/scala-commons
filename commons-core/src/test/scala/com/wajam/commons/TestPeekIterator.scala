@@ -58,6 +58,22 @@ class TestPeekIterator extends FlatSpec with MockitoSugar {
     itr.hasNext should be(false)
   }
 
+  it should "return all elements satisfying the predicate, and leave all following elements intact" in {
+    val it = PeekIterator(Iterator(1, 2, 3, 4, 5, 6, 7, 8, 9))
+
+    it.listWhile(_ < 5) should be(List(1, 2, 3, 4))
+
+    it.toList should be(List(5, 6, 7, 8, 9))
+  }
+
+  it should "return empty and not alter the iterator if the next element doesn't satisfy the predicate" in {
+    val it = PeekIterator(Iterator(1, 2, 3, 4, 5, 6, 7, 8, 9))
+
+    it.listWhile(_ > 1) should be(Nil)
+
+    it.toList should be(List(1, 2, 3, 4, 5, 6, 7, 8, 9))
+  }
+
   "Closable iterator" should "be closed" in {
     trait ClosableIterator[T] extends Iterator[Int] with Closable
 
