@@ -44,6 +44,18 @@ trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedRe
     }
   }
 
+  trait CreatableWithResponseResource[Input, Output] extends Resource {
+    lazy val createWithResponseMeter = tracedTimer(s"$name-creates-with-response")
+
+    def create(value: Input, params: Map[String, String] = Map())(implicit mf: Manifest[Output], ec: ExecutionContext): Future[TypedResponse[Output]] = {
+      implicit val captor = new ResponseHandlerCaptor
+      timeAction(createWithResponseMeter) {
+        val responseFuture = client.post(AsyncClient.url(url).params(params), decomposer.decompose(value))
+        responseFuture.map(response => (captor.extra, response.as[Output]))
+      }
+    }
+  }
+
   trait ApplicableResource[Key, R <: Resource] extends Resource {
     def apply(key: Key): R
   }
