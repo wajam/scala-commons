@@ -1,6 +1,7 @@
 package com.wajam.asyncclient
 
 import scala.concurrent.{ ExecutionContext, Future }
+import com.ning.http.client.Response
 import dispatch._
 import com.ning.http.client
 import scala.language.implicitConversions
@@ -144,6 +145,12 @@ object AsyncClient {
   def secureHost(url: String, port: Int): Request = RequestImpl(dispatch.host(url, port).secure)
 
   def url(url: String): Request = RequestImpl(dispatch.url(url))
+
+  val charsetRegex = "(?<=charset=)[^;]*".r
+
+  def extractCharset(response: Response, default: String = "UTF-8"): String = {
+    charsetRegex.findFirstMatchIn(response.getContentType).map(_.group(0)).filter(_.nonEmpty).getOrElse(default)
+  }
 }
 
 trait RequestHandler[RequestBody] {
