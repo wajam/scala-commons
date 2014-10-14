@@ -2,10 +2,10 @@ package com.wajam.commons
 
 import scala.util.Random
 
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{ Matchers, FlatSpec }
 
 class TestWeightedItemsSelector extends FlatSpec
-with Matchers {
+    with Matchers {
 
   implicit def random = new Random(13)
 
@@ -38,6 +38,5 @@ with Matchers {
     grouped("b").size should be(57)
     grouped("c").size should be(22)
   }
-
 
 }
