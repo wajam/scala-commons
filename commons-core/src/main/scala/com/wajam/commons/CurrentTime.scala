@@ -8,3 +8,5 @@ trait CurrentTime {
   def currentTime: Long = System.currentTimeMillis()
 
 }
+
+object CurrentTime extends CurrentTime
