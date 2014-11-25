@@ -60,6 +60,8 @@ sealed trait Request {
 
   def params(paramList: Map[String, String]): Request
 
+  def headers(headers: Map[String, String]): Request
+
   def auth(username: String, password: String): Request
 }
 
@@ -132,6 +134,8 @@ object AsyncClient {
     def params(paramList: Map[String, String]) = RequestImpl(inner <<? paramList)
 
     def auth(username: String, password: String) = RequestImpl(inner as (username, password))
+
+    def headers(headers: Map[String, String]): Request = RequestImpl(inner <:< headers)
 
     override def toString(): String = inner.toRequest.getUrl
   }
