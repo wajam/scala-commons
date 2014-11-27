@@ -1,6 +1,6 @@
 package com.wajam.gearman
 
-import org.scalatest.{Matchers, BeforeAndAfterAll, FlatSpec}
+import org.scalatest.{ Matchers, BeforeAndAfterAll, FlatSpec }
 import org.gearman._
 import com.wajam.gearman.utils.GearmanJson
 
@@ -41,6 +41,7 @@ abstract class GearmanIntegrationTest extends FlatSpec with Matchers with Before
   override protected def afterAll() {
     this.gearmanWorker.unregisterAll()
     this.gearmanServer.closeAllPorts()
+    this.gearmanService.shutdown()
   }
 
 }

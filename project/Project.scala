@@ -52,7 +52,7 @@ object CommonsBuild extends Build {
       .setPreference(DoubleIndentClassDeclaration, true)
     }
 
-  val defaultSettings = Defaults.defaultSettings ++ Defaults.itSettings ++ scalariformSettings ++ Seq(
+  val defaultSettings = Defaults.defaultSettings ++ Defaults.itSettings ++ scalariformSettingsWithIt ++ Seq(
     libraryDependencies ++= commonDeps,
     resolvers ++= commonResolvers,
     retrieveManaged := true,

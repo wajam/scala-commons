@@ -1,6 +1,6 @@
 package com.wajam.asyncclient
 
-import org.scalatest.{Matchers, FunSuite}
+import org.scalatest.{ Matchers, FunSuite }
 import net.liftweb.json.Formats
 import com.ning.http.client.Response
 import scala.concurrent.Await
@@ -15,7 +15,7 @@ class TestResource extends FunSuite with Matchers {
   }
 }
 
-object TestResource extends AsyncClientTest  {
+object TestResource extends AsyncClientTest {
 
   object ResourceExample extends ResourceModule[Nothing, WrappedXml, UntypedWrappedXml] {
     protected def client: AsyncClient = new AsyncClient(testConfig)

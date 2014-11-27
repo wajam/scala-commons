@@ -1,10 +1,10 @@
 package com.wajam.gearman
 
-import scala.concurrent.{Await, ExecutionContext}
-import java.util.concurrent.{TimeoutException, Executors}
+import scala.concurrent.{ Await, ExecutionContext }
+import java.util.concurrent.{ TimeoutException, Executors }
 import com.wajam.gearman.impl.AsyncGearmanClient
-import scala.util.{Failure, Success}
-import com.wajam.gearman.exception.{JobSubmissionException, JobExecutionException}
+import scala.util.{ Failure, Success }
+import com.wajam.gearman.exception.{ JobSubmissionException, JobExecutionException }
 import scala.concurrent.duration._
 
 class TestGearmanClient extends GearmanIntegrationTest {
