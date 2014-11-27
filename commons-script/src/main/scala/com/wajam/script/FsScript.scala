@@ -1,6 +1,6 @@
 package com.wajam.script
 
-import java.io.{ FileWriter, File }
+import java.io.{ File, FileWriter }
 
 trait FsScript { this: Script =>
 

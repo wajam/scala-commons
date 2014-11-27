@@ -1,12 +1,14 @@
 package com.wajam.commons
 
 import java.io._
-import scala.io.Source._
-import com.wajam.commons.Closable._
-import scala.io.{ Codec, Source }
-import java.util.zip.GZIPInputStream
 import java.security.AccessController
+import java.util.zip.GZIPInputStream
+import scala.io.Source._
+import scala.io.{ Codec, Source }
+
 import sun.security.action.GetPropertyAction
+
+import com.wajam.commons.Closable._
 
 object FileUtils extends Logging {
 

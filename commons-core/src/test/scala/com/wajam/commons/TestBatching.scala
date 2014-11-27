@@ -1,7 +1,7 @@
 package com.wajam.commons
 
-import org.scalatest.Matchers
-import org.scalatest.FlatSpec
+import org.scalatest.{ FlatSpec, Matchers }
+
 import com.wajam.commons.Batching._
 
 class TestBatching extends FlatSpec with Matchers {

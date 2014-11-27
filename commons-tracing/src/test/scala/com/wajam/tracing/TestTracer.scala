@@ -1,13 +1,14 @@
 package com.wajam.tracing
 
-import org.scalatest.{ BeforeAndAfter, FunSuite }
-import org.scalatest.Matchers._
-import com.wajam.tracing.Annotation.Message
-import org.scalatest.mock.MockitoSugar
-import org.mockito.Mockito._
-import com.wajam.commons.{ ControlableSequentialStringIdGenerator, ControlableCurrentTime }
 import org.junit.runner.RunWith
+import org.mockito.Mockito._
+import org.scalatest.Matchers._
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.mock.MockitoSugar
+import org.scalatest.{ BeforeAndAfter, FunSuite }
+
+import com.wajam.commons.{ ControlableCurrentTime, ControlableSequentialStringIdGenerator }
+import com.wajam.tracing.Annotation.Message
 
 /**
  *

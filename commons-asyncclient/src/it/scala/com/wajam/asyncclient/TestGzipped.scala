@@ -1,11 +1,12 @@
 package com.wajam.asyncclient
 
 import scala.concurrent.Await
-import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
-import org.scalatest.{Matchers, FlatSpec}
-import org.json4s.{DefaultFormats, Formats}
-import org.json4s.JsonAST.{JObject, JBool, JField}
+import scala.concurrent.duration.Duration
+
+import org.json4s.JsonAST.{ JBool, JField, JObject }
+import org.json4s.{ DefaultFormats, Formats }
+import org.scalatest.{ FlatSpec, Matchers }
 
 class TestGzipped extends FlatSpec with Matchers with JsonOperations {
 

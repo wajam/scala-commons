@@ -1,8 +1,9 @@
 package com.wajam.tracing
 
-import java.text.SimpleDateFormat
 import java.net.InetSocketAddress
-import com.wajam.commons.{ ThreadLocalVariable, CurrentTime, IdGenerator, UuidStringGenerator }
+import java.text.SimpleDateFormat
+
+import com.wajam.commons.{ CurrentTime, IdGenerator, ThreadLocalVariable, UuidStringGenerator }
 import com.wajam.tracing.Annotation.Message
 
 /**

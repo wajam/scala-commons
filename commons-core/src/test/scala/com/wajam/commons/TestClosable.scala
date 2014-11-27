@@ -1,18 +1,19 @@
 package com.wajam.commons
 
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{ Matchers, FunSuite }
-import org.scalatest.mock.MockitoSugar
-import org.mockito.Mockito._
 import java.io.IOException
+
+import org.junit.runner.RunWith
+import org.mockito.Mockito._
+import org.scalatest.junit.JUnitRunner
+import org.scalatest.mock.MockitoSugar
+import org.scalatest.{ FunSuite, Matchers }
 
 @RunWith(classOf[JUnitRunner])
 class TestClosable extends FunSuite with MockitoSugar with Matchers {
   test("should close after `using` complete normally") {
     val mockClosable = mock[Closable]
 
-    import Closable.using
+    import com.wajam.commons.Closable.using
     using(mockClosable) { closable => }
 
     verify(mockClosable).close()
@@ -22,7 +23,7 @@ class TestClosable extends FunSuite with MockitoSugar with Matchers {
     val mockClosable = mock[Closable]
 
     evaluating {
-      import Closable.using
+      import com.wajam.commons.Closable.using
       using(mockClosable) { closable => throw new IOException() }
     } should produce[IOException]
 
@@ -37,7 +38,7 @@ class TestClosable extends FunSuite with MockitoSugar with Matchers {
 
     val mockNotClosableWithClose = mock[NotClosableWithClose]
 
-    import Closable._
+    import com.wajam.commons.Closable._
     using(mockNotClosableWithClose) { closable => }
 
     verify(mockNotClosableWithClose).close()

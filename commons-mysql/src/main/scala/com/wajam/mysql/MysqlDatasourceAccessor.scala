@@ -1,14 +1,16 @@
 package com.wajam.mysql
 
-import java.util
 import java.sql._
-import java.util.concurrent.{ TimeUnit, ScheduledThreadPoolExecutor }
+import java.util
+import java.util.concurrent.{ ScheduledThreadPoolExecutor, TimeUnit }
 import javax.sql.DataSource
-import scala.util.{ Failure, Success, Try, Random }
-import com.wajam.commons.Logging
-import com.wajam.tracing.Traced
+import scala.util.{ Failure, Random, Success, Try }
+
 import com.mchange.v2.c3p0.ComboPooledDataSource
 import com.yammer.metrics.scala.Instrumented
+
+import com.wajam.commons.Logging
+import com.wajam.tracing.Traced
 
 class MysqlDatasourceAccessor(configuration: MysqlDatabaseAccessorConfig) extends Logging with Instrumented with Traced {
 

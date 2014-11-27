@@ -1,7 +1,6 @@
 package com.wajam.commons
 
-import language.reflectiveCalls
-import language.implicitConversions
+import scala.language.{ implicitConversions, reflectiveCalls }
 
 trait Closable {
   def close()
