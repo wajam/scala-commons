@@ -59,7 +59,7 @@ class TestPeekIterator extends FlatSpec with MockitoSugar {
     itr.hasNext should be(false)
   }
 
-  it should "return all elements satisfying the predicate, and leave all following elements intact" in {
+  "listWhile" should "return all elements satisfying the predicate, and leave all following elements intact" in {
     val it = PeekIterator(Iterator(1, 2, 3, 4, 5, 6, 7, 8, 9))
 
     it.listWhile(_ < 5) should be(List(1, 2, 3, 4))
@@ -73,6 +73,18 @@ class TestPeekIterator extends FlatSpec with MockitoSugar {
     it.listWhile(_ > 1) should be(Nil)
 
     it.toList should be(List(1, 2, 3, 4, 5, 6, 7, 8, 9))
+  }
+
+  "sequenceBy" should "returns sequences" in {
+    val it = PeekIterator(Iterator(1, 0, 3, 3, 5, 3, 3, 6, 1)).sequenceBy(_ % 3)
+
+    it.next() should be(List(1))
+    it.next() should be(List(0, 3, 3))
+    it.next() should be(List(5))
+    it.next() should be(List(3, 3, 6))
+    it.next() should be(List(1))
+
+    it.toList should be(Nil)
   }
 
   "Closable iterator" should "be closed" in {
