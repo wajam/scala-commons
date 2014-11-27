@@ -6,10 +6,10 @@ package com.wajam.commons
  * One should discard the decorated iterator, and use only the new PeekIterator. Using the old iterator is undefined,
  * subject to change, and may result in changes to the new iterator as well.
  */
-class PeekIterator[T](itr: Iterator[T]) extends BufferedIterator[T] {
+class PeekIterator[+T, U <: T](itr: Iterator[U]) extends BufferedIterator[T] {
   self =>
 
-  private var nextElem: Option[T] = getNextElem()
+  private var nextElem: Option[U] = getNextElem()
 
   def peek: T = nextElem.get
 
@@ -50,7 +50,7 @@ class PeekIterator[T](itr: Iterator[T]) extends BufferedIterator[T] {
     }
   }
 
-  private def getNextElem(): Option[T] = {
+  private def getNextElem(): Option[U] = {
     if (itr.hasNext) {
       Some(itr.next())
     } else None
@@ -58,11 +58,11 @@ class PeekIterator[T](itr: Iterator[T]) extends BufferedIterator[T] {
 }
 
 object PeekIterator {
-  def apply[T](itr: Iterator[T]): PeekIterator[T] = new PeekIterator(itr)
+  def apply[T](itr: Iterator[T]): PeekIterator[T, T] = new PeekIterator(itr)
 }
 
 object ClosablePeekIterator {
-  def apply[T](itr: Iterator[T] with Closable): PeekIterator[T] with Closable = new PeekIterator(itr) with Closable {
+  def apply[T](itr: Iterator[T] with Closable): PeekIterator[T, T] with Closable = new PeekIterator(itr) with Closable {
     def close() = itr.close()
   }
 }
@@ -70,8 +70,8 @@ object ClosablePeekIterator {
 /**
  * Ordering implementation to sort PeekIterator by peeked head value.
  */
-class PeekIteratorOrdering[T](implicit ord: Ordering[T]) extends Ordering[PeekIterator[T]] {
-  def compare(x: PeekIterator[T], y: PeekIterator[T]) = {
+class PeekIteratorOrdering[T](implicit ord: Ordering[T]) extends Ordering[PeekIterator[T, T]] {
+  def compare(x: PeekIterator[T, T], y: PeekIterator[T, T]) = {
     (x.hasNext, y.hasNext) match {
       case (true, true) => ord.compare(x.peek, y.peek)
       case (true, false) => 1
