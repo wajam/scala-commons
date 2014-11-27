@@ -1,11 +1,12 @@
 package com.wajam.commons
 
-import org.scalatest.{ BeforeAndAfter, FunSuite, Matchers }
-import org.scalatest.mock.MockitoSugar
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 import java.io._
 import java.util.zip.GZIPOutputStream
+
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+import org.scalatest.mock.MockitoSugar
+import org.scalatest.{ BeforeAndAfter, FunSuite, Matchers }
 
 @RunWith(classOf[JUnitRunner])
 class TestFileUtils extends FunSuite with MockitoSugar with Matchers with BeforeAndAfter {

@@ -1,6 +1,7 @@
 package com.wajam.tracing
 
 import java.text.SimpleDateFormat
+
 import com.wajam.commons.InetUtils
 
 /**

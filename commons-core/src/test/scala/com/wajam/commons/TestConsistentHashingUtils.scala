@@ -1,7 +1,7 @@
 package com.wajam.commons
 
-import org.scalatest.{ Matchers, FunSuite }
 import org.scalatest.mock.MockitoSugar
+import org.scalatest.{ FunSuite, Matchers }
 
 class TestRatioUtils extends FunSuite with MockitoSugar with Matchers {
 

@@ -1,12 +1,13 @@
 package com.wajam.commons
 
+import java.util.NoSuchElementException
+
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+import org.mockito.Mockito._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
-import java.util.NoSuchElementException
+import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar
-import org.mockito.Mockito._
 
 @RunWith(classOf[JUnitRunner])
 class TestPeekIterator extends FlatSpec with MockitoSugar {

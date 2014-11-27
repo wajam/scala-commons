@@ -2,14 +2,16 @@ package com.wajam.gearman.impl
 
 import java.net.InetSocketAddress
 import scala.concurrent.{ ExecutionContext, Future, Promise }
-import com.wajam.commons.Logging
-import org.gearman.core.GearmanConstants
-import org.gearman.{ GearmanBackgroundJob, GearmanJobResult, GearmanJob, Gearman }
-import org.gearman.GearmanClient.{ SubmitCallbackResult, GearmanSubmitHandler }
-import org.gearman.GearmanJob.Priority
-import com.wajam.gearman.exception.{ JobExecutionException, JobSubmissionException }
 import scala.util.{ Failure, Success }
+
+import org.gearman.GearmanClient.{ GearmanSubmitHandler, SubmitCallbackResult }
+import org.gearman.GearmanJob.Priority
+import org.gearman.core.GearmanConstants
+import org.gearman.{ Gearman, GearmanBackgroundJob, GearmanJob, GearmanJobResult }
+
+import com.wajam.commons.Logging
 import com.wajam.gearman.GearmanClient
+import com.wajam.gearman.exception.{ JobExecutionException, JobSubmissionException }
 import com.wajam.gearman.utils.GearmanJson
 import com.wajam.tracing.Traced
 

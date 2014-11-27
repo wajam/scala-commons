@@ -1,11 +1,12 @@
 package com.wajam.asyncclient
 
+import java.util.concurrent.ExecutionException
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.language.implicitConversions
+
+import com.ning.http.client
 import com.ning.http.client.Response
 import dispatch._
-import com.ning.http.client
-import scala.language.implicitConversions
-import java.util.concurrent.ExecutionException
 
 trait BaseAsyncClient {
 

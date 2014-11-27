@@ -1,11 +1,13 @@
 package com.wajam.tracing
 
+import java.net.{ InetAddress, InetSocketAddress }
+import java.util.{ Calendar, TimeZone }
+
+import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.Matchers._
-import java.util.{ TimeZone, Calendar }
-import java.net.{ InetAddress, InetSocketAddress }
-import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+
 import com.wajam.commons.InetUtils
 
 /**

@@ -1,13 +1,14 @@
 package com.wajam.asyncclient
 
-import org.json4s.JsonAST.JValue
-import org.json4s.native.Serialization.write
+import java.io.{ ByteArrayOutputStream, OutputStreamWriter }
+import scala.util.Try
+
 import com.ning.http.client.Response
 import dispatch.as
-import java.io.{ OutputStreamWriter, ByteArrayOutputStream }
-import org.json4s.{ Extraction, Formats }
+import org.json4s.JsonAST.JValue
 import org.json4s.native.JsonMethods._
-import scala.util.Try
+import org.json4s.native.Serialization.write
+import org.json4s.{ Extraction, Formats }
 
 trait JsonOperations {
   jsonOperations =>

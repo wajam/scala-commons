@@ -1,8 +1,9 @@
 package com.wajam.script
 
+import scala.collection.mutable.ListBuffer
+
 import com.wajam.commons.Logging
 import com.wajam.script.Script.Executor
-import scala.collection.mutable.ListBuffer
 
 trait Script extends DelayedInit with Logging {
 

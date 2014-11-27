@@ -1,13 +1,12 @@
 package com.wajam.asyncclient
 
-import org.scalatest.{ Matchers, FunSuite }
-import org.scalatest.Matchers
-import org.json4s.JsonAST._
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import org.scalacheck.Arbitrary
 import com.ning.http.client.{ FluentCaseInsensitiveStringsMap, Response }
 import org.json4s.DefaultFormats
+import org.json4s.JsonAST._
 import org.json4s.native.Serialization
+import org.scalacheck.Arbitrary
+import org.scalatest.{ FunSuite, Matchers }
+import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
 class TestJsonOperations extends FunSuite
     with Matchers with GeneratorDrivenPropertyChecks with JsonOperations {
@@ -29,8 +28,8 @@ class TestJsonOperations extends FunSuite
   }
 
   test("should have implicit conversions from Response to untyped Json response") {
-    import org.scalatest.mock.MockitoSugar.mock
     import org.mockito.Mockito._
+    import org.scalatest.mock.MockitoSugar.mock
     def convertTo(value: Response)(implicit conv: ResponseHandler[JsonResponse]) = {
       conv.to(value)
     }
@@ -59,9 +58,9 @@ object TestJsonOperations {
   // Taken from precog (blueeyes)
   // https://github.com/jdegoes/blueeyes/blob/master/json/src/test/scala/blueeyes/json/ArbitraryJValue.scala
 
+  import org.scalacheck.Arbitrary.arbitrary
+  import org.scalacheck.Gen._
   import org.scalacheck._
-  import Gen._
-  import Arbitrary.arbitrary
 
   def genJValue: Gen[JValue] = frequency((5, genSimple), (1, wrap(genArray)), (1, wrap(genObject)))
 

@@ -1,7 +1,7 @@
 package com.wajam.commons
 
-import scala.concurrent.{ ExecutionContext, Future }
 import scala.collection.mutable.ArrayBuffer
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success, Try }
 
 /**

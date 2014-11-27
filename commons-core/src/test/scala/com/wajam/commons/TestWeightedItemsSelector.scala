@@ -2,7 +2,7 @@ package com.wajam.commons
 
 import scala.util.Random
 
-import org.scalatest.{ Matchers, FlatSpec }
+import org.scalatest.{ FlatSpec, Matchers }
 
 class TestWeightedItemsSelector extends FlatSpec
     with Matchers {

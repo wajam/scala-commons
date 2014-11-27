@@ -1,7 +1,8 @@
 package com.wajam.gearman
 
-import org.scalatest.{ Matchers, BeforeAndAfterAll, FlatSpec }
 import org.gearman._
+import org.scalatest.{ BeforeAndAfterAll, FlatSpec, Matchers }
+
 import com.wajam.gearman.utils.GearmanJson
 
 abstract class GearmanIntegrationTest extends FlatSpec with Matchers with BeforeAndAfterAll {

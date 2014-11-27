@@ -1,15 +1,16 @@
 package com.wajam.mysql
 
-import com.wajam.commons.Logging
 import java.sql._
-import collection.mutable.ArrayBuffer
-import com.yammer.metrics.scala.Instrumented
-import scala.util.{ Failure, Success, Try }
-import scala.collection.generic.CanBuildFrom
-import com.wajam.tracing.Traced
 import scala.annotation.tailrec
-
+import scala.collection.generic.CanBuildFrom
+import scala.collection.mutable.ArrayBuffer
 import scala.language.higherKinds
+import scala.util.{ Failure, Success, Try }
+
+import com.yammer.metrics.scala.Instrumented
+
+import com.wajam.commons.Logging
+import com.wajam.tracing.Traced
 
 /**
  * MySQL database access helper

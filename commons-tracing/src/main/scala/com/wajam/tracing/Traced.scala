@@ -1,9 +1,11 @@
 package com.wajam.tracing
 
-import com.yammer.metrics.core.{ TimerContext, MetricName }
 import java.util.concurrent.TimeUnit
+
+import com.yammer.metrics.core.{ MetricName, TimerContext }
 import com.yammer.metrics.scala.{ Instrumented, Timer }
-import Annotation.Message
+
+import com.wajam.tracing.Annotation.Message
 
 /**
  * The mixin trait for creating a class which is traced with NRV tracing and instrumented with metrics.

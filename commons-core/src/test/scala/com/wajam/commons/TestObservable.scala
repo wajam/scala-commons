@@ -1,7 +1,7 @@
 package com.wajam.commons
 
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.FlatSpec
+import org.scalatest.matchers.ShouldMatchers
 
 class TestObservable extends FlatSpec with ShouldMatchers {
 

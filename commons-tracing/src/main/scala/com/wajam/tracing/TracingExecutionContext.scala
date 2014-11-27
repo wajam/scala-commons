@@ -1,6 +1,7 @@
 package com.wajam.tracing
 
 import scala.concurrent.ExecutionContext
+
 import com.wajam.commons.Logging
 
 /**

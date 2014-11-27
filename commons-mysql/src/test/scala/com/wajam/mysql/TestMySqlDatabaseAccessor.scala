@@ -1,7 +1,8 @@
 package com.wajam.mysql
 
-import org.scalatest.FunSuite
 import java.sql.SQLException
+
+import org.scalatest.FunSuite
 
 class TestMySqlDatabaseAccessor extends FunSuite {
 

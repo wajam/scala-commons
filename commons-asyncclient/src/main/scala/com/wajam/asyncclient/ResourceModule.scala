@@ -2,9 +2,11 @@ package com.wajam.asyncclient
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.language.higherKinds
-import com.wajam.tracing.{ TracedTimer, Traced }
 import scala.util.Success
+
 import com.ning.http.client.Response
+
+import com.wajam.tracing.{ Traced, TracedTimer }
 
 trait ResourceModule[RequestBody, ResponseMessage <: ConvertableResponse[TypedResponse], TypedResponse[_]] extends Traced {
 
