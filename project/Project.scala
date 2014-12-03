@@ -47,6 +47,11 @@ object CommonsBuild extends Build {
     "org.gearman" % "java-gearman-service" % "0.3"
   )
 
+  lazy val elasticsearchDeps = Seq(
+    "org.json4s" %% "json4s-native" % "3.2.5",
+    "org.elasticsearch" % "elasticsearch" % "1.4.0" exclude("io.netty", "netty")
+  )
+
   def configureScalariform(pref: IFormattingPreferences): IFormattingPreferences = {
     pref.setPreference(AlignParameters, true)
       .setPreference(DoubleIndentClassDeclaration, true)
@@ -75,6 +80,7 @@ object CommonsBuild extends Build {
     .aggregate(asyncclient)
     .aggregate(gearman)
     .aggregate(script)
+    .aggregate(elasticsearch)
 
   lazy val core = Project("commons-core", file("commons-core"))
     .configs(IntegrationTest)
@@ -132,5 +138,12 @@ object CommonsBuild extends Build {
     .settings(parallelExecution in IntegrationTest := false)
     .dependsOn(core)
     .dependsOn(tracing)
+
+  lazy val elasticsearch = Project("commons-elasticsearch", file("commons-elasticsearch"))
+    .configs(IntegrationTest)
+    .settings(defaultSettings: _*)
+    .settings(libraryDependencies ++= elasticsearchDeps)
+    .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Spec"))))
+    .settings(parallelExecution in IntegrationTest := false)
 
 }
