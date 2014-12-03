@@ -7,17 +7,15 @@ import scala.concurrent.ExecutionContext
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthStatus
 import org.elasticsearch.index.query.{ MatchAllQueryBuilder, TermQueryBuilder }
 import org.scalatest.Matchers._
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.{ IntegrationPatience, ScalaFutures }
 import org.scalatest.time.{ Span, _ }
 import org.scalatest.{ BeforeAndAfter, BeforeAndAfterAll, FlatSpec }
 
 import com.wajam.commons.elasticsearch.Twitter.Tweet
 
-class ElasticsearchClientSpec extends FlatSpec with BeforeAndAfter with BeforeAndAfterAll with ScalaFutures {
+class ElasticsearchClientSpec extends FlatSpec with BeforeAndAfter with BeforeAndAfterAll with ScalaFutures with IntegrationPatience {
 
   import scala.concurrent.ExecutionContext.Implicits.global
-
-  implicit val patience = PatienceConfig(timeout = Span(20, Seconds))
 
   implicit val ser = new ElasticsearchJsonSerializer
 
