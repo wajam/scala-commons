@@ -12,6 +12,7 @@ object CommonsBuild extends Build {
     "Sun Maven2 Repo" at "http://download.java.net/maven/2",
     "Sun GF Maven2 Repo" at "http://download.java.net/maven/glassfish",
     "Oracle Maven2 Repo" at "http://download.oracle.com/maven",
+    "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/",
     "spy" at "http://files.couchbase.com/maven2/"
   )
 
@@ -36,10 +37,20 @@ object CommonsBuild extends Build {
   val asyncclientDeps = Seq(
     "net.databinder.dispatch" %% "dispatch-core" % "0.11.0" exclude("io.netty", "netty"),
     "net.databinder.dispatch" %% "dispatch-lift-json" % "0.11.0" exclude("io.netty", "netty"),
-    "io.netty" % "netty" % "3.5.0.Final",
+    "io.netty" % "netty" % "3.6.6.Final",
     "org.json4s" %% "json4s-native" % "3.2.5",
     "com.twitter" %% "util-core" % "6.1.0",
     "org.ccil.cowan.tagsoup" % "tagsoup" % "1.2" % "test, it"
+  )
+
+  lazy val hbaseDeps = Seq(
+    "com.github.nscala-time" %% "nscala-time" % "0.4.0",
+    "io.netty" % "netty" % "3.6.6.Final",
+    "org.json4s" %% "json4s-native" % "3.2.5",
+    "org.apache.hadoop" % "hadoop-client" % "2.3.0-cdh5.1.0" exclude("io.netty", "netty"),
+    "org.apache.hbase" % "hbase-common" % "0.98.1-cdh5.1.0" exclude("org.slf4j", "slf4j-log4j12") exclude("io.netty", "netty") exclude("junit", "junit"),
+    "org.apache.hbase" % "hbase-client" % "0.98.1-cdh5.1.0" exclude("org.slf4j", "slf4j-log4j12") exclude("io.netty", "netty") exclude("junit", "junit"),
+    "com.typesafe" % "config" % "1.2.0" % "test, it"
   )
 
   val gearmanDeps = Seq(
@@ -78,6 +89,7 @@ object CommonsBuild extends Build {
     .aggregate(mysql)
     .aggregate(caching)
     .aggregate(asyncclient)
+    .aggregate(hbase)
     .aggregate(gearman)
     .aggregate(script)
     .aggregate(elasticsearch)
@@ -126,6 +138,15 @@ object CommonsBuild extends Build {
     .settings(defaultSettings: _*)
     .settings(libraryDependencies ++= asyncclientDeps)
     .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Test"))))
+    .settings(parallelExecution in IntegrationTest := false)
+    .dependsOn(core)
+    .dependsOn(tracing)
+
+  lazy val hbase = Project("commons-hbase", file("commons-hbase"))
+    .configs(IntegrationTest)
+    .settings(defaultSettings: _*)
+    .settings(libraryDependencies ++= hbaseDeps)
+    .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Spec"))))
     .settings(parallelExecution in IntegrationTest := false)
     .dependsOn(core)
     .dependsOn(tracing)
