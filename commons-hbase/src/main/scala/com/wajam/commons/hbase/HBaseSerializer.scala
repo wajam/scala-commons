@@ -29,19 +29,40 @@ class HBaseJsonSerializer(defaultColumnFamily: String = "base",
   val DATE_BYTE = 't'.toByte
   val DATE_STR = DATE_BYTE.toString
 
-  /**
-   * Type hints to support persistence of polymorphic objects.
-   * Example: if we have a Doc and Cat class that inherits Animal, we need to hint that
-   * we may use them in a polymorphic way.
-   *
-   * Usage: override def typeHints = ShortTypeHints(List(classOf[Dog], classOf[Cat]))
-   */
-  def typeHints: TypeHints = NoTypeHints
+  private[hbase] def typeHints: TypeHints = NoTypeHints
+
+  private[hbase] def tablesColumnsFamilies: Map[TableName, Iterable[HBaseSchema.Family]] = Map()
 
   /**
-   * Table mapping of the "special" column families
+   * Serializer with given <code>TypeHint</code>s. Useful to support persistence of polymorphic objects.
+   * Example: if we have a Doc and Cat class that inherits Animal, we need to hint that
+   * we may use them in a polymorphic way.
+   * <p>
+   * Usage: <code>serializer.withTypeHints(ShortTypeHints(List(classOf[Dog], classOf[Cat])))</code>
    */
-  def tablesColumnsFamilies: Map[TableName, Set[String]] = Map()
+  def withTypeHints(hints: TypeHints): HBaseJsonSerializer = {
+    val families = tablesColumnsFamilies
+    new HBaseJsonSerializer(defaultColumnFamily, extraFormatSerializers) {
+      override private[hbase] val typeHints = hints
+      override private[hbase] val tablesColumnsFamilies = families
+    }
+  }
+
+  /**
+   * Serializer with tables having "special" column families.
+   */
+  def withTables(tables: Iterable[HBaseSchema.Table]): HBaseJsonSerializer = {
+    val hints = typeHints
+    new HBaseJsonSerializer(defaultColumnFamily, extraFormatSerializers) {
+      override private[hbase] val typeHints = hints
+      override private[hbase] val tablesColumnsFamilies = tables.flatMap { table =>
+        table.families.filter(_.name != defaultColumnFamily) match {
+          case Nil => None
+          case families => Some(table.name -> families)
+        }
+      }.toMap
+    }
+  }
 
   private object DateTimeSerializer extends Serializer[DateTime] {
     val isoDateFormat = ISODateTimeFormat.dateTime()
@@ -59,15 +80,15 @@ class HBaseJsonSerializer(defaultColumnFamily: String = "base",
     }
   }
 
-  val NoneJNothingSerializer = FieldSerializer[AnyRef]({
+  private val NoneJNothingSerializer = FieldSerializer[AnyRef]({
     case (field, None) => Some((field, JNothing))
     case (field, _) if field.contains("$") => None // This ignore private fields
   }, PartialFunction.empty)
 
-  implicit val formats = DefaultFormats.withHints(typeHints) + DateTimeSerializer ++ extraFormatSerializers + NoneJNothingSerializer
+  private implicit lazy val formats = DefaultFormats.withHints(typeHints) + DateTimeSerializer ++ extraFormatSerializers + NoneJNothingSerializer
 
-  private def isColumnFamilyObject(table: TableName, columnFamily: String): Boolean = {
-    tablesColumnsFamilies.get(table).exists(_.contains(columnFamily))
+  private def getColumnFamilyObject(table: TableName, columnFamily: String): Option[HBaseSchema.Family] = {
+    tablesColumnsFamilies.get(table).flatMap(_.find(_.name == columnFamily))
   }
 
   private def fromJValue(v: JValue): Array[Byte] = v match {
@@ -106,14 +127,15 @@ class HBaseJsonSerializer(defaultColumnFamily: String = "base",
 
     Extraction.decompose(a) match {
       case o: JObject => o.obj.foreach {
-        case JField(name, value) if isColumnFamilyObject(table, name) => value match {
-          case uo: JObject => uo.obj.foreach(mutateField(name, _))
-          case JNothing => mutations.deleteFamily(name)
-          case _ => throw new Exception(s"Cannot serialize extra family '$name' value type: $value (type ${value.getClass})")
+        case field @ JField(name, value) => (value, getColumnFamilyObject(table, name)) match {
+          case (uo: JObject, Some(_)) => uo.obj.foreach(mutateField(name, _))
+          case (JNothing, Some(family)) if family.deleteIfFamilyFieldMissing => mutations.deleteFamily(name)
+          case (JNothing, Some(_)) => // No action on column family
+          case (_, None) => mutateField(defaultColumnFamily, field)
+          case _ => throw new Exception(s"Cannot serialize extra family '$name' value : $value (type ${value.getClass})")
         }
-        case f: JField => mutateField(defaultColumnFamily, f)
+        case field => mutateField(defaultColumnFamily, field)
       }
-
       case o => throw new Exception(s"Cannot serialize object: $o (type ${o.getClass})")
     }
   }
@@ -123,7 +145,7 @@ class HBaseJsonSerializer(defaultColumnFamily: String = "base",
       JField(colName, fromBytes(result.get(defaultColumnFamily, colName)))) ++
       result.families.flatMap {
         case family if family == defaultColumnFamily => None
-        case family if isColumnFamilyObject(table, family) => Some(JField(family, JObject(result.columns(family).map((colName: String) =>
+        case family if getColumnFamilyObject(table, family).isDefined => Some(JField(family, JObject(result.columns(family).map((colName: String) =>
           JField(colName, fromBytes(result.get(family, colName)))).toList)))
       }).toList
 

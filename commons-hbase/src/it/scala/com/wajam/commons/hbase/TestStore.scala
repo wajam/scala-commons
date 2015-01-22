@@ -28,7 +28,7 @@ class TestSchema(namespace: String, admin: HBaseAdmin) extends HBaseSchema(admin
 
     new TestSchema(namespace, admin) {
       override val testMultiFamiliesTable: Table = Table(_testMultiFamiliesTable.name,
-        Family("extra2", SnappyCompression) :: _testMultiFamiliesTable.families)
+        Family("extra2", SnappyCompression, deleteIfFamilyFieldMissing = false) :: _testMultiFamiliesTable.families)
     }
   }
 }
@@ -37,14 +37,9 @@ class TestStore(hbaseClient: HBaseClient, schema: TestSchema) {
 
   import com.wajam.commons.hbase.TestStore._
 
-  implicit val serializer = new HBaseJsonSerializer {
-    override def typeHints = ShortTypeHints(List(
-      classOf[PolymorphicEntity1],
-      classOf[PolymorphicEntity2]))
-
-    override def tablesColumnsFamilies = schema.tables.map(table =>
-      table.name -> table.families.filter(_.name != "base").map(_.name).toSet).toMap
-  }
+  implicit val serializer = new HBaseJsonSerializer()
+    .withTypeHints(ShortTypeHints(List(classOf[PolymorphicEntity1], classOf[PolymorphicEntity2])))
+    .withTables(schema.tables)
 
   // CompoundEntity operations
 
