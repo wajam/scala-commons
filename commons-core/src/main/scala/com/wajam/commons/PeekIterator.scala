@@ -6,23 +6,23 @@ package com.wajam.commons
  * One should discard the decorated iterator, and use only the new PeekIterator. Using the old iterator is undefined,
  * subject to change, and may result in changes to the new iterator as well.
  */
-class PeekIterator[T](itr: Iterator[T]) extends BufferedIterator[T] {
+class PeekIterator[+T](itr: Iterator[T]) extends BufferedIterator[T] {
   self =>
 
-  private var nextElem: Option[T] = getNextElem()
+  private var nextElem: Option[Any] = getNextElem()
 
-  def peek: T = nextElem.get
+  def peek: T = nextElem.get.asInstanceOf[T]
 
   def head: T = peek
 
-  def hasNext = {
+  def hasNext: Boolean = {
     nextElem.isDefined
   }
 
-  def next() = {
+  def next(): T = {
     val value = nextElem
     nextElem = getNextElem()
-    value.get
+    value.get.asInstanceOf[T]
   }
 
   /**
@@ -50,7 +50,7 @@ class PeekIterator[T](itr: Iterator[T]) extends BufferedIterator[T] {
     }
   }
 
-  private def getNextElem(): Option[T] = {
+  private def getNextElem(): Option[Any] = {
     if (itr.hasNext) {
       Some(itr.next())
     } else None
