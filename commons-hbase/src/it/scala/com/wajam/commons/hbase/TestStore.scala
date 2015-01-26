@@ -37,9 +37,8 @@ class TestStore(hbaseClient: HBaseClient, schema: TestSchema) {
 
   import com.wajam.commons.hbase.TestStore._
 
-  implicit val serializer = new HBaseJsonSerializer()
-    .withTypeHints(ShortTypeHints(List(classOf[PolymorphicEntity1], classOf[PolymorphicEntity2])))
-    .withTables(schema.tables)
+  implicit val serializer = HBaseJsonSerializer(
+    ShortTypeHints(List(classOf[PolymorphicEntity1], classOf[PolymorphicEntity2])), schema.tables)
 
   // CompoundEntity operations
 
