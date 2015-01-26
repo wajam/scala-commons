@@ -85,7 +85,7 @@ object HBaseSchema {
 
   case object NoCompression extends FamilyCompression
 
-  case class Family(name: String, compression: FamilyCompression = NoCompression) {
+  case class Family(name: String, compression: FamilyCompression = NoCompression, deleteIfFamilyFieldMissing: Boolean = true) {
     def toDescriptor: HColumnDescriptor = {
       val descriptor = new HColumnDescriptor(name)
       compression match {

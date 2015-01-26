@@ -91,7 +91,6 @@ class HBaseClientSpec extends FlatSpec with BeforeAndAfterAll {
     store.getMultiFamiliesExtra(2) should be(None)
   }
 
-  // TODO: move to a specific schema test suite?
   it should "support adding extra families dynamically" in new Setup {
     val e_0 = MultiFamiliesEntity(0, value = "0", extra = Some(ExtraFamily("0", 0, Some("0"))))
     val e_1 = MultiFamiliesEntity(1, value = "1", extra = None)
@@ -126,6 +125,10 @@ class HBaseClientSpec extends FlatSpec with BeforeAndAfterAll {
     newStore.getMultiFamiliesExtra(2) should be(e_2.extra)
     newStore.getMultiFamiliesExtra(3) should be(e_3.extra)
     newStore.getMultiFamiliesExtra2(3) should be(e_3.extra2)
+
+    // saving without extra2 should not delete it because extra2 has deleteIfFamilyFieldMissing = false
+    newStore.saveMultiFamiliesEntity(e_0)
+    newStore.getMultiFamiliesEntity(0) should be(Some(e_0_extra2))
   }
 
   it should "fail to save extra families that are not case class" in new Setup {

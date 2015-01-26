@@ -44,7 +44,7 @@ object CommonsBuild extends Build {
   )
 
   lazy val hbaseDeps = Seq(
-    "com.github.nscala-time" %% "nscala-time" % "0.4.0",
+    "com.github.nscala-time" %% "nscala-time" % "1.0.0",
     "io.netty" % "netty" % "3.6.6.Final",
     "org.json4s" %% "json4s-native" % "3.2.5",
     "org.apache.hadoop" % "hadoop-client" % "2.3.0-cdh5.1.0" exclude("io.netty", "netty"),
