@@ -13,7 +13,7 @@ class TestJsonOperations extends FunSuite
 
   protected def charset = "UTF-8"
 
-  implicit protected def formats = DefaultFormats
+  implicit protected def formats: DefaultFormats.type = DefaultFormats
 
   implicit val arbJValue: Arbitrary[JValue] = TestJsonOperations.arbJValue
 
@@ -62,13 +62,13 @@ object TestJsonOperations {
   import org.scalacheck.Gen._
   import org.scalacheck._
 
-  def genJValue: Gen[JValue] = frequency((5, genSimple), (1, wrap(genArray)), (1, wrap(genObject)))
+  def genJValue: Gen[JValue] = lzy(frequency((5, genSimple), (1, wrap(genArray)), (1, wrap(genObject))))
 
   def genJBool: Gen[JBool] = arbitrary[Boolean] map JBool
 
   def genJString: Gen[JString] = alphaStr map JString
 
-  def genSimple: Gen[JValue] = oneOf(value(JNull), genJBool, genJString)
+  def genSimple: Gen[JValue] = oneOf(const(JNull), genJBool, genJString)
 
   def genArray: Gen[JValue] = genList map JArray
 

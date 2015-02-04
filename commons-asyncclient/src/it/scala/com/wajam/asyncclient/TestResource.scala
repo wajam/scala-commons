@@ -5,7 +5,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
 import com.ning.http.client.Response
-import net.liftweb.json.Formats
 import org.scalatest.{ FunSuite, Matchers }
 
 class TestResource extends FunSuite with Matchers {
@@ -30,8 +29,6 @@ object TestResource extends AsyncClientTest {
     }
 
     implicit protected def decomposer: Decomposer[Nothing] = ??? // Not using it... yet
-
-    implicit protected def formats: Formats = ??? // Not using this
 
     val root = RootResource
 
