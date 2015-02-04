@@ -6,7 +6,6 @@ import scalariform.formatter.preferences._
 object CommonsBuild extends Build {
   val commonResolvers = Seq(
     // common deps
-    "Wajam" at "http://ci1.cx.wajam/",
     "Sonatype" at "http://oss.sonatype.org/content/repositories/release",
     "Maven.org" at "http://repo1.maven.org/maven2",
     "Sun Maven2 Repo" at "http://download.java.net/maven/2",
@@ -78,8 +77,7 @@ object CommonsBuild extends Build {
     publishMavenStyle := true,
     organization := "com.wajam",
     version := "0.1-SNAPSHOT",
-    scalaVersion := "2.10.2",
-    crossScalaVersions := Seq("2.10.2", "2.11.1"),
+    crossScalaVersions := Seq("2.10.4", "2.11.1"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature"),
     ScalariformKeys.preferences := configureScalariform(FormattingPreferences())
   )
