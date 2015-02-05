@@ -27,6 +27,10 @@ class ElasticsearchClientSpec extends FlatSpec with BeforeAndAfter with BeforeAn
     TestElasticNode.reset()
   }
 
+  after {
+    TestElasticNode.close()
+  }
+
   "Elasticsearch Client" should "index (any) object" in new Setup {
     val idx = for {
       _ <- client.admin.createIndex("twitter")

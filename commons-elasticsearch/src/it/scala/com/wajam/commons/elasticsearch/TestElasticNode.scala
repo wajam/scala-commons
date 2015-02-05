@@ -45,4 +45,8 @@ object TestElasticNode {
     client.admin.deleteIndex("_all")
   }
 
+  def close() = {
+    nodeClient.close()
+  }
+
 }
