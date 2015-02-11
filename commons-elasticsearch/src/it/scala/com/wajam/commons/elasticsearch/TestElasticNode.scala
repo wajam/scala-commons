@@ -3,7 +3,10 @@ package com.wajam.commons.elasticsearch
 import java.io.File
 import java.util.UUID
 
-import scala.concurrent.ExecutionContext
+
+import scala.concurrent.duration._
+import scala.concurrent.{ Await, ExecutionContext }
+import scala.language.postfixOps
 
 import org.elasticsearch.common.settings.ImmutableSettings
 import org.elasticsearch.node.NodeBuilder._
@@ -42,7 +45,7 @@ object TestElasticNode {
   val client = new AsyncElasticsearchClient(nodeClient)
 
   def reset()(implicit ec: ExecutionContext) = {
-    client.admin.deleteIndex("_all")
+    Await.result(client.admin.deleteIndex("_all"), 10 seconds)
   }
 
   def close() = {
