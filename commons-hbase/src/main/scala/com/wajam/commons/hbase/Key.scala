@@ -9,6 +9,8 @@ trait Key {
   def min: Key = StringKey.Min
 
   def max: Key = StringKey.Max
+
+  def head: Key
 }
 
 case class CompoundKey(a: Key, b: Key) extends Key {
@@ -17,6 +19,8 @@ case class CompoundKey(a: Key, b: Key) extends Key {
   override def min: Key = CompoundKey(a, b.min)
 
   override def max: Key = CompoundKey(a, b.max)
+
+  def head: Key = a.head
 }
 
 object CompoundKey {
@@ -27,6 +31,8 @@ object CompoundKey {
 
 case class StringKey(v: String) extends Key {
   override def string: String = v
+
+  def head: Key = this
 }
 
 object StringKey {
@@ -37,6 +43,8 @@ object StringKey {
 
 case class LongKey(v: Long, pad: Int = 20) extends Key {
   override def string: String = s"%0${pad}d".format(v)
+
+  def head: Key = this
 }
 
 case class HashKey(v: String) extends Key {
@@ -45,6 +53,8 @@ case class HashKey(v: String) extends Key {
   override def min: Key = HashKey.Min
 
   override def max: Key = HashKey.Max
+
+  def head: Key = this
 }
 
 object HashKey {
