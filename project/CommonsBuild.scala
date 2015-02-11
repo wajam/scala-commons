@@ -167,6 +167,7 @@ object CommonsBuild extends Build {
     .configs(IntegrationTest)
     .settings(defaultSettings: _*)
     .settings(libraryDependencies ++= elasticsearchDeps)
+    .settings(fork in IntegrationTest := true)
     .settings(testOptions in IntegrationTest := Seq(Tests.Filter(s => s.contains("Spec"))))
     .settings(parallelExecution in IntegrationTest := false)
 
